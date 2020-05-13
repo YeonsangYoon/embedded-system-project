@@ -19,7 +19,7 @@ main cycle:
 
 """
 
-import requests
+import requests, json
 import threading
 import os
 import sys
@@ -112,8 +112,12 @@ class mainWindow(QMainWindow,form_class1) :
         #self.pet_num +=1
         self.label_pet_num.setText(str(RVM_status.recycling_number['pet'])+'개')
 
+    # 시작, 종료 버튼 기능
     def next_page(self) :
-        RVM_status.startRVM()
+        if RVM_status.machine_stat == RVM_STATE_OFF:
+            RVM_status.startRVM()
+        elif RVM_status.machine_stat == RVM_STATE_ON:
+            RVM_status.terminationRVM()
         #phone_window.ready()
         #main_window.close()
         #phone_window.show()
@@ -167,12 +171,12 @@ def main_Cycle():
             #2 initial condition check
             retval = checkObjectCond()
             if retval < 0:
-                errorExit(1)
+                errorExit(2)
 
             #3 rail move command 
             retval = moveCommand('Dzone')
             if retval < 0:
-                errorExit(1)
+                errorExit(3)
 
             #4 판별 요청
             #resultD = requests.get("URL")
@@ -181,7 +185,7 @@ def main_Cycle():
             # 분류기 작동
             retval = moveCommand(resultD)
             if retval < 0:
-                errorExit(1)
+                errorExit(5)
 
             # 스탯 업데이트
             RVM_status.updateStatus(resultD)
@@ -191,7 +195,7 @@ def main_Cycle():
 
 def errorExit(errtype):
     
-    print("ERROR %s : bulabula", errtype)
+    print("ERROR #%s : bulabula...." %errtype)
 
 def checkObjectCond():
     #debug code
@@ -224,11 +228,11 @@ def moveCommand(destination):
         return Error
 
 def requestD():
-    #response = requests.get("URL")
-    response = 'pet'
     print("#4 : discriminating image....")
-    time.sleep(4)
-    return response 
+
+    response = requests.post("http://0.0.0.0:5000/requestd")
+    
+    return response.text
 
 ####################################################################################
 #                                   main sequence                                  #
