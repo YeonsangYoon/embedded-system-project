@@ -62,13 +62,17 @@ class RVM_Stat:
     def terminationRVM(self):
         self.machine_stat = RVM_STATE_OFF
 
-    def updateStatus(self):
+    def updateStatus(self, result):
         if self.machine_stat == RVM_STATE_OFF:
             self.exec_stat = EXEC_NONE_TYPE
             self.recycling_number['can'] = 0
             self.recycling_number['pet'] = 0
         else:
             self.exec_stat = EXEC_NONE_TYPE
+            if result == 'pet':
+                self.recycling_number['pet'] += 1
+            elif result == 'can':
+                self.recycling_number['can'] += 1
 
     def putTrashIntoRVM(self, result):
         if result == 'can':
@@ -85,8 +89,7 @@ form_class2 = uic.loadUiType("phoneNumber.ui")[0]
 
 # 화면을 띄우는데 사용되는 Class 선언
 class mainWindow(QMainWindow,form_class1) :
-    can_num = 0
-    pet_num = 0
+
     phone_number = ""
     def __init__(self) :
         super().__init__()
@@ -102,17 +105,18 @@ class mainWindow(QMainWindow,form_class1) :
         self.label_intro.setText("쓰레기를 넣어 주세요.\nphone number : "+self.phone_number)
 
     def test_c(self) :
-        self.can_num +=1
-        self.label_can_num.setText(str(self.can_num)+'개')
+        #self.can_num +=1
+        self.label_can_num.setText(str(RVM_status.recycling_number['can'])+'개')
 
     def test_p(self) :
-        self.pet_num +=1
-        self.label_pet_num.setText(str(self.pet_num)+'개')
+        #self.pet_num +=1
+        self.label_pet_num.setText(str(RVM_status.recycling_number['pet'])+'개')
 
     def next_page(self) :
-        phone_window.ready()
-        main_window.close()
-        phone_window.show()
+        RVM_status.startRVM()
+        #phone_window.ready()
+        #main_window.close()
+        #phone_window.show()
         
 
 class phoneWindow(QMainWindow, form_class2) :
@@ -180,7 +184,7 @@ def main_Cycle():
                 errorExit(1)
 
             # 스탯 업데이트
-            RVM_status.updateStatus()
+            RVM_status.updateStatus(resultD)
 
             #debug msg
             print("debug msg : 1 trash complete")
@@ -240,9 +244,9 @@ RVM_status = RVM_Stat()
 # 유저 인터페이스 init
 app = QApplication(sys.argv) 
 
-phone_window = phoneWindow() 
+#phone_window = phoneWindow() 
 main_window = mainWindow()
-phone_window.show()
+main_window.show()
 
 t1 = threading.Thread(target = main_Cycle)
 t1.daemon = False
