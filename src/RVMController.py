@@ -87,42 +87,53 @@ class RVM_Stat:
 form_class1 = uic.loadUiType("untitled.ui")[0]
 form_class2 = uic.loadUiType("phoneNumber.ui")[0]
 
+def printU(mesg) :
+    main_window.show_message(mesg)
+
 # 화면을 띄우는데 사용되는 Class 선언
 class mainWindow(QMainWindow,form_class1) :
 
-    phone_number = ""
+    #phone_number = ""
     def __init__(self) :
         super().__init__()
         self.setupUi(self)
-        self.pbtn_test_c.clicked.connect(self.test_c)
-        self.pbtn_test_p.clicked.connect(self.test_p)
-        self.pbtn_next_page.clicked.connect(self.next_page)
+        #self.pbtn_test_c.clicked.connect(self.test_c)
+        #self.pbtn_test_p.clicked.connect(self.test_p)
+        self.pbtn_start.clicked.connect(self.button_start)
 
-    def ready(self) :
-        self.phone_number=phone_window.current_PN
-        self.can_num=0
-        self.pet_num=0
-        self.label_intro.setText("쓰레기를 넣어 주세요.\nphone number : "+self.phone_number)
+    def show_message(self,message) :
+        #self.phone_number=phone_window.current_PN
+        #self.can_num=0
+        #self.pet_num=0
+        self.label_intro.setText("쓰레기를 넣어 주세요.\n"+message)
 
-    def test_c(self) :
-        #self.can_num +=1
+    def can_pet(self) :
         self.label_can_num.setText(str(RVM_status.recycling_number['can'])+'개')
-
-    def test_p(self) :
-        #self.pet_num +=1
         self.label_pet_num.setText(str(RVM_status.recycling_number['pet'])+'개')
 
     # 시작, 종료 버튼 기능
-    def next_page(self) :
+    def button_start(self) :
         if RVM_status.machine_stat == RVM_STATE_OFF:
             RVM_status.startRVM()
+            self.button_text()
         elif RVM_status.machine_stat == RVM_STATE_ON:
             RVM_status.terminationRVM()
+            self.button_text()
+            
         #phone_window.ready()
         #main_window.close()
         #phone_window.show()
-        
+    
+    def button_text(self) :
+        if RVM_status.machine_stat == RVM_STATE_OFF:
+            if RVM_status.exec_stat != EXEC_NONE_TYPE:
+                self.pbtn_start.setText('waiting')
+            else :
+                self.pbtn_start.setText('start')
+        elif RVM_status.machine_stat == RVM_STATE_ON:
+            self.pbtn_start.setText('end')
 
+            
 class phoneWindow(QMainWindow, form_class2) :
     current_PN = ""
     def __init__(self) :
@@ -165,10 +176,12 @@ def main_Cycle():
     while 1:
 
         print("#1 : check condition....")    #debug
+        printU("#1 : check condition....")
         time.sleep(1)
         if RVM_status.machine_stat == RVM_STATE_ON:        #1 machine stat check
 
             #2 initial condition check
+            RVM_status.exec_stat = EXEC_INITCOND_TYPE  #please_confirm
             retval = checkObjectCond()
             if retval < 0:
                 errorExit(2)
@@ -189,9 +202,13 @@ def main_Cycle():
 
             # 스탯 업데이트
             RVM_status.updateStatus(resultD)
+            main_window.can_pet()
+            main_window.button_text()
 
             #debug msg
             print("debug msg : 1 trash complete")
+            printU("debug msg : 1 trash complete")
+
 
 def errorExit(errtype):
     
@@ -200,27 +217,32 @@ def errorExit(errtype):
 def checkObjectCond():
     #debug code
     print("#2 : check object condition.....")
+    printU("#2 : check object condition.....")
     time.sleep(2)
     return retValOK
 
 def moveCommand(destination):
     if destination == 'can':
         print("#5 : moving to can zone.....")
+        printU("#5 : moving to can zone.....")
         time.sleep(3)
         return retValOK
 
     elif destination == 'pet':
         print("#5 : moving to pet zone.....")
+        printU("#5 : moving to pet zone.....")
         time.sleep(3)
         return retValOK
 
     elif destination == 'Dzone':
         print("#3 : moving to discriminating zone.....")
+        printU("#3 : moving to discriminating zone.....")
         time.sleep(3)
         return retValOK
 
     elif destination == 'return':
         print("#5 : moving to entrance.....")
+        printU("#5 : moving to entrance.....")
         time.sleep(3)
         return retValOK
 
@@ -229,9 +251,14 @@ def moveCommand(destination):
 
 def requestD():
     print("#4 : discriminating image....")
+    printU("#4 : discriminating image....")
 
+    #linux
     response = requests.post("http://0.0.0.0:5000/requestd")
     
+    #window(debug)
+    #response = requests.post("http://localhost:5000/requestd")
+
     return response.text
 
 ####################################################################################
