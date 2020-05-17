@@ -20,11 +20,6 @@ def start_discrimination():
     return 'pet'
     
 
-
-
-def main():
-    app.run(host='0.0.0.0', threaded=True, debug=False, port=5000)
-
-
 if __name__ == '__main__':
-    main()
+    
+    app.run(host='0.0.0.0', threaded=False, debug=False, port=5000)

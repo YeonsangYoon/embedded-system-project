@@ -35,10 +35,11 @@ RVM_STATE_ON = 1
 
 # execute Type
 EXEC_NONE_TYPE = 0
-EXEC_INITCOND_TYPE = 1
-EXEC_RAIL_TYPE = 2
-EXEC_IMAGEPROCESS_TYPE = 3
-EXEC_ROUTING_TYPE = 4
+EXEC_IRSENCOR_TYPE = 1
+EXEC_LOADCELL_TYPE = 2
+EXEC_RAIL_TYPE = 3
+EXEC_IMAGEPROCESS_TYPE = 4
+EXEC_ROUTING_TYPE = 5
 
 # Error Type
 retValOK = 1
@@ -49,12 +50,12 @@ class RVM_Stat:
     def __init__(self):
 
         self.machine_stat = RVM_STATE_OFF
-        self.exec_stat = 0
+        self.exec_stat = EXEC_NONE_TYPE
         self.recycling_number = {
             "can" : 0,
             "pet" : 0
         }
-        self.error_stat = 0
+        self.error_stat = retValOK
 
     def startRVM(self):
         self.machine_stat = RVM_STATE_ON
@@ -79,6 +80,7 @@ class RVM_Stat:
             self.recycling_number['can'] += 1
         elif result == 'pet':
             self.recycling_number['pet'] += 1
+
 
 
 # user interface class
@@ -167,7 +169,6 @@ class phoneWindow(QMainWindow, form_class2) :
 
     def enClick(self) :
         phone_window.close()
-        main_window.ready()
         main_window.show()
 
 
@@ -181,15 +182,18 @@ def main_Cycle():
         if RVM_status.machine_stat == RVM_STATE_ON:        #1 machine stat check
 
             #2 initial condition check
-            RVM_status.exec_stat = EXEC_INITCOND_TYPE  #please_confirm
             retval = checkObjectCond()
             if retval < 0:
-                errorExit(2)
+                errorExit()
+
+            retval = checkLoadCell()
+            if retval < 0:
+                errorExit()
 
             #3 rail move command 
             retval = moveCommand('Dzone')
             if retval < 0:
-                errorExit(3)
+                errorExit()
 
             #4 판별 요청
             #resultD = requests.get("URL")
@@ -198,7 +202,7 @@ def main_Cycle():
             # 분류기 작동
             retval = moveCommand(resultD)
             if retval < 0:
-                errorExit(5)
+                errorExit()
 
             # 스탯 업데이트
             RVM_status.updateStatus(resultD)
@@ -210,39 +214,51 @@ def main_Cycle():
             printU("debug msg : 1 trash complete")
 
 
-def errorExit(errtype):
-    
-    print("ERROR #%s : bulabula...." %errtype)
+def errorExit():
+    printU("ERROR %s " %RVM_status.exec_stat)
 
+#IR sensor
 def checkObjectCond():
     #debug code
-    print("#2 : check object condition.....")
+    #print("#2 : check object condition.....")
+    RVM_status.exec_stat = EXEC_IRSENCOR_TYPE
     printU("#2 : check object condition.....")
     time.sleep(2)
     return retValOK
 
+def checkLoadCell():
+
+    RVM_status.exec_stat = EXEC_LOADCELL_TYPE
+    printU('#3 : check object weight....')
+    time.sleep(3)
+    return retValOK
+
 def moveCommand(destination):
     if destination == 'can':
-        print("#5 : moving to can zone.....")
-        printU("#5 : moving to can zone.....")
+        RVM_status.exec_stat = EXEC_ROUTING_TYPE
+        #print("#6 : moving to can zone.....")
+        printU("#6 : moving to can zone.....")
         time.sleep(3)
         return retValOK
 
     elif destination == 'pet':
-        print("#5 : moving to pet zone.....")
-        printU("#5 : moving to pet zone.....")
+        RVM_status.exec_stat = EXEC_ROUTING_TYPE
+        #print("#6 : moving to pet zone.....")
+        printU("#6 : moving to pet zone.....")
         time.sleep(3)
         return retValOK
 
     elif destination == 'Dzone':
-        print("#3 : moving to discriminating zone.....")
-        printU("#3 : moving to discriminating zone.....")
+        RVM_status.exec_stat = EXEC_RAIL_TYPE
+        #print("#4 : moving to discriminating zone.....")
+        printU("#4 : moving to discriminating zone.....")
         time.sleep(3)
         return retValOK
 
     elif destination == 'return':
-        print("#5 : moving to entrance.....")
-        printU("#5 : moving to entrance.....")
+        RVM_status.exec_stat = EXEC_ROUTING_TYPE
+        #print("#6 : moving to entrance.....")
+        printU("#6 : moving to entrance.....")
         time.sleep(3)
         return retValOK
 
@@ -250,11 +266,16 @@ def moveCommand(destination):
         return Error
 
 def requestD():
-    print("#4 : discriminating image....")
-    printU("#4 : discriminating image....")
+    RVM_status.exec_stat = EXEC_IMAGEPROCESS_TYPE
+    #print("#5 : discriminating image....")
+    printU("#5 : discriminating image....")
 
     #linux
-    response = requests.post("http://0.0.0.0:5000/requestd")
+    try:
+        response = requests.post("http://0.0.0.0:5000/requestd")
+    #except ConnectionRefusedError:
+    except:
+        return errorExit()
     
     #window(debug)
     #response = requests.post("http://localhost:5000/requestd")
@@ -275,9 +296,9 @@ RVM_status = RVM_Stat()
 # 유저 인터페이스 init
 app = QApplication(sys.argv) 
 
-#phone_window = phoneWindow() 
+phone_window = phoneWindow() 
 main_window = mainWindow()
-main_window.show()
+phone_window.show()
 
 t1 = threading.Thread(target = main_Cycle)
 t1.daemon = False
