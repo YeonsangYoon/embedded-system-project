@@ -26,8 +26,11 @@ import sys
 import time
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
-#import Serial
+import serial
 #import RPI.GPIO as GPIO
+
+port = '/dev/ttyACM0'                           # USB serial interface
+serialToArduino = serial.Serial(port, 9600)
 
 # machine stat
 RVM_STATE_OFF = 0
@@ -243,9 +246,9 @@ def moveCommand(destination):
 
     elif destination == 'pet':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        #print("#6 : moving to pet zone.....")
+        serialToArduino.writelines('1')
         printU("#6 : moving to pet zone.....")
-        time.sleep(3)
+        time.sleep(2)
         return retValOK
 
     elif destination == 'Dzone':
