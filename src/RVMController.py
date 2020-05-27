@@ -299,7 +299,6 @@ def checkObjectCond():
     RVM_status.exec_stat = EXEC_IRSENCOR_TYPE
     printU("#2 : check object condition.....")
     time.sleep(2)
-    return Error
     return retValOK
 
 def checkLoadCell():
