@@ -25,6 +25,7 @@ import os
 import sys
 import time
 from PyQt5.QtWidgets import *
+from PyQt5.QtCore import *
 from PyQt5 import uic
 import serial
 #import RPI.GPIO as GPIO
@@ -91,9 +92,28 @@ class RVM_Stat:
 # 단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
 form_class1 = uic.loadUiType("untitled.ui")[0]
 form_class2 = uic.loadUiType("phoneNumber.ui")[0]
+form_class3 = uic.loadUiType("popup.ui")[0]
 
 def printU(mesg) :
     main_window.show_message(mesg)
+
+def printE(mesg) :
+    #main_window.error_pop(mesg)
+    main_window.show_popup_ok_cancel('a','b')
+    '''ep = errorPOP
+    ep.show()
+    print('a')
+    app2 = QApplication(sys.argv) 
+    app2.exec_()
+    print('a')'''
+
+
+class error_sig(QObject) :
+
+    signal1 = pyqtSignal(int)
+
+    def on(self, f):
+        self.signal1.emit(f)
 
 # 화면을 띄우는데 사용되는 Class 선언
 class mainWindow(QMainWindow,form_class1) :
@@ -105,6 +125,8 @@ class mainWindow(QMainWindow,form_class1) :
         #self.pbtn_test_c.clicked.connect(self.test_c)
         #self.pbtn_test_p.clicked.connect(self.test_p)
         self.pbtn_start.clicked.connect(self.button_start)
+        self.err_sig = error_sig()
+        self.err_sig.signal1.connect(self.error_pop)
 
     def show_message(self,message) :
         #self.phone_number=phone_window.current_PN
@@ -130,14 +152,43 @@ class mainWindow(QMainWindow,form_class1) :
         #phone_window.show()
     
     def button_text(self) :
-        if RVM_status.machine_stat == RVM_STATE_OFF:
+        if RVM_status.error_stat == Error:
+            self.pbtn_start.setText('reset')
+        elif RVM_status.machine_stat == RVM_STATE_OFF:
             if RVM_status.exec_stat != EXEC_NONE_TYPE:
                 self.pbtn_start.setText('waiting')
             else :
                 self.pbtn_start.setText('start')
         elif RVM_status.machine_stat == RVM_STATE_ON:
             self.pbtn_start.setText('end')
+    
+    def error_report(self,f):
+        self.err_sig.on(f)
 
+    def error_pop(self,mesg) :
+        self.show_message('Error')
+
+        p = errPopDialog()
+        p.exec_()
+        
+        """
+        qmb =QMessageBox()
+        result = qmb.warning(self,'Error','error occurs in step %s' %mesg,QMessageBox.Ok)
+        if result == QMessageBox.Ok :
+            RVM_status.error_stat=retValOK
+        """
+
+class errPopDialog(QDialog,form_class3):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        self.label_err_mesg.setText('Error occurs in\nStep %s' %RVM_status.exec_stat)
+        self.pushButton.clicked.connect(self.errorOk)
+
+    def errorOk(self):
+        RVM_status.error_stat = retValOK
+        self.close()
+    
             
 class phoneWindow(QMainWindow, form_class2) :
     current_PN = ""
@@ -185,40 +236,61 @@ def main_Cycle():
         if RVM_status.machine_stat == RVM_STATE_ON:        #1 machine stat check
 
             #2 initial condition check
-            retval = checkObjectCond()
-            if retval < 0:
+            #retval = checkObjectCond()
+            if checkObjectCond() < 0:
                 errorExit()
 
-            retval = checkLoadCell()
-            if retval < 0:
+            #retval = checkLoadCell()
+            elif checkLoadCell() < 0:
                 errorExit()
 
             #3 rail move command 
-            retval = moveCommand('Dzone')
-            if retval < 0:
+            #retval = moveCommand('Dzone')
+            elif moveCommand('Dzone') < 0:
                 errorExit()
 
             #4 판별 요청
             #resultD = requests.get("URL")
-            resultD = requestD()
+            #resultD = requestD()
 
             # 분류기 작동
-            retval = moveCommand(resultD)
-            if retval < 0:
-                errorExit()
+            #retval = moveCommand(resultD)
+            else :
+                resultD = requestD()
 
-            # 스탯 업데이트
-            RVM_status.updateStatus(resultD)
-            main_window.can_pet()
-            main_window.button_text()
+                if moveCommand(resultD)<0:
+                    errorExit()
 
-            #debug msg
-            print("debug msg : 1 trash complete")
-            printU("debug msg : 1 trash complete")
+            if RVM_status.error_stat == retValOK:
+                # 스탯 업데이트
+                RVM_status.updateStatus(resultD)
+                main_window.can_pet()
+                main_window.button_text()
+                #debug msg
+                print("debug msg : 1 trash complete")
+                printU("debug msg : 1 trash complete")
+                time.sleep(1)
+
+            elif RVM_status.error_stat == Error :
+                #debug msg
+                #main_window.button_text()
+                while RVM_status.error_stat == Error :
+                    time.sleep(1)
+                
+                printU("Error fixed.. restart")
+                time.sleep(1)
+                main_window.button_text()
+
+                
+            
 
 
 def errorExit():
-    printU("ERROR %s " %RVM_status.exec_stat)
+    if RVM_status.error_stat == Error:
+        return 
+    
+    RVM_status.error_stat=Error
+    main_window.error_report(RVM_status.exec_stat)
 
 #IR sensor
 def checkObjectCond():
@@ -227,6 +299,7 @@ def checkObjectCond():
     RVM_status.exec_stat = EXEC_IRSENCOR_TYPE
     printU("#2 : check object condition.....")
     time.sleep(2)
+    return Error
     return retValOK
 
 def checkLoadCell():
@@ -275,6 +348,7 @@ def requestD():
 
     #linux
     try:
+        #response = requests.post("http://localhost:5000/requestd")
         response = requests.post("http://0.0.0.0:5000/requestd")
     #except ConnectionRefusedError:
     except:
@@ -301,7 +375,7 @@ app = QApplication(sys.argv)
 
 phone_window = phoneWindow() 
 main_window = mainWindow()
-phone_window.show()
+main_window.show()
 
 t1 = threading.Thread(target = main_Cycle)
 t1.daemon = False
