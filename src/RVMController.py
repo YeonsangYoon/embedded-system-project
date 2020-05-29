@@ -94,8 +94,8 @@ form_class1 = uic.loadUiType("untitled.ui")[0]
 form_class2 = uic.loadUiType("phoneNumber.ui")[0]
 form_class3 = uic.loadUiType("popup.ui")[0]
 
-def printU(mesg) :
-    main_window.show_message(mesg)
+
+
 
 def printE(mesg) :
     #main_window.error_pop(mesg)
@@ -118,7 +118,8 @@ class error_sig(QObject) :
 # 화면을 띄우는데 사용되는 Class 선언
 class mainWindow(QMainWindow,form_class1) :
 
-    #phone_number = ""
+    m1 = '쓰레기를 넣어 주세요'
+    m2 = ''
     def __init__(self) :
         super().__init__()
         self.setupUi(self)
@@ -128,11 +129,15 @@ class mainWindow(QMainWindow,form_class1) :
         self.err_sig = error_sig()
         self.err_sig.signal1.connect(self.error_pop)
 
-    def show_message(self,message) :
-        #self.phone_number=phone_window.current_PN
-        #self.can_num=0
-        #self.pet_num=0
-        self.label_intro.setText("쓰레기를 넣어 주세요.\n"+message)
+    def set_message_big(self,message) :
+        self.m1 = message
+
+    def set_message_small(self,message) :
+        self.m2 = message
+
+    def show_message(self) :
+        self.label_intro.setText(self.m1+"\n"+self.m2)
+
 
     def can_pet(self) :
         self.label_can_num.setText(str(RVM_status.recycling_number['can'])+'개')
@@ -152,9 +157,7 @@ class mainWindow(QMainWindow,form_class1) :
         #phone_window.show()
     
     def button_text(self) :
-        if RVM_status.error_stat == Error:
-            self.pbtn_start.setText('reset')
-        elif RVM_status.machine_stat == RVM_STATE_OFF:
+        if RVM_status.machine_stat == RVM_STATE_OFF:
             if RVM_status.exec_stat != EXEC_NONE_TYPE:
                 self.pbtn_start.setText('waiting')
             else :
@@ -166,7 +169,9 @@ class mainWindow(QMainWindow,form_class1) :
         self.err_sig.on(f)
 
     def error_pop(self,mesg) :
-        self.show_message('Error')
+        self.set_message_big('에러가 발생했습니다.')
+        self.set_message_small('Error')
+        self.show_message()
 
         p = errPopDialog()
         p.exec_()
@@ -178,6 +183,14 @@ class mainWindow(QMainWindow,form_class1) :
             RVM_status.error_stat=retValOK
         """
 
+def printU(mesg) :
+    main_window.set_message_small(mesg)
+    main_window.show_message()
+
+def printB(mesg) :
+    main_window.set_message_big(mesg)
+    main_window.show_message()
+
 class errPopDialog(QDialog,form_class3):
     def __init__(self):
         super().__init__()
@@ -186,6 +199,8 @@ class errPopDialog(QDialog,form_class3):
         self.pushButton.clicked.connect(self.errorOk)
 
     def errorOk(self):
+        RVM_status.terminationRVM()
+        RVM_status.updateStatus(0)
         RVM_status.error_stat = retValOK
         self.close()
     
@@ -230,10 +245,12 @@ def main_Cycle():
     # main cycle
     while 1:
 
-        print("#1 : check condition....")    #debug
-        printU("#1 : check condition....")
-        time.sleep(1)
-        if RVM_status.machine_stat == RVM_STATE_ON:        #1 machine stat check
+        if RVM_status.machine_stat != RVM_STATE_ON:
+            print("#1 : check condition....")    #debug
+            printB('start 버튼을 눌러주세요')
+            printU("#1 : check condition....")
+            time.sleep(1)
+        else :        #1 machine stat check
 
             #2 initial condition check
             #retval = checkObjectCond()
@@ -257,7 +274,7 @@ def main_Cycle():
             #retval = moveCommand(resultD)
             else :
                 resultD = requestD()
-
+                #resultD = 'can'   
                 if moveCommand(resultD)<0:
                     errorExit()
 
@@ -265,20 +282,20 @@ def main_Cycle():
                 # 스탯 업데이트
                 RVM_status.updateStatus(resultD)
                 main_window.can_pet()
-                main_window.button_text()
                 #debug msg
                 print("debug msg : 1 trash complete")
+                printB('쓰레기가 무사히 버려졌습니다.')
                 printU("debug msg : 1 trash complete")
-                time.sleep(1)
+                time.sleep(3)
+                main_window.button_text()
 
             elif RVM_status.error_stat == Error :
                 #debug msg
-                #main_window.button_text()
                 while RVM_status.error_stat == Error :
                     time.sleep(1)
                 
                 printU("Error fixed.. restart")
-                time.sleep(1)
+                time.sleep(2)
                 main_window.button_text()
 
                 
@@ -297,6 +314,7 @@ def checkObjectCond():
     #debug code
     #print("#2 : check object condition.....")
     RVM_status.exec_stat = EXEC_IRSENCOR_TYPE
+    printB('쓰레기를 넣어 주세요')
     printU("#2 : check object condition.....")
     time.sleep(2)
     return retValOK
@@ -309,6 +327,8 @@ def checkLoadCell():
     return retValOK
 
 def moveCommand(destination):
+    printB('쓰레기가 이동하고 있습니다.')
+
     if destination == 'can':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
         #print("#6 : moving to can zone.....")
@@ -343,6 +363,7 @@ def moveCommand(destination):
 def requestD():
     RVM_status.exec_stat = EXEC_IMAGEPROCESS_TYPE
     #print("#5 : discriminating image....")
+    printB('쓰레기가 분석되고 있습니다.')
     printU("#5 : discriminating image....")
 
     #linux
