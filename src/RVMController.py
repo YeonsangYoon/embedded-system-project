@@ -26,7 +26,9 @@ import sys
 import time
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+from PyQt5.QtGui import *
 from PyQt5 import uic
+
 import serial
 #import RPI.GPIO as GPIO
 
@@ -129,6 +131,13 @@ class mainWindow(QMainWindow,form_class1) :
         self.err_sig = error_sig()
         self.err_sig.signal1.connect(self.error_pop)
 
+        self.qPixmapVar = QPixmap()
+        self.qPixmapVar.load('img/can.png')
+        self.label_10.setPixmap(self.qPixmapVar)
+        self.qPixmapVar.load('img/pet.png')
+        self.label_17.setPixmap(self.qPixmapVar)
+
+
     def set_message_big(self,message) :
         self.m1 = message
 
@@ -142,6 +151,8 @@ class mainWindow(QMainWindow,form_class1) :
     def can_pet(self) :
         self.label_can_num.setText(str(RVM_status.recycling_number['can'])+'개')
         self.label_pet_num.setText(str(RVM_status.recycling_number['pet'])+'개')
+
+    
 
     # 시작, 종료 버튼 기능
     def button_start(self) :
