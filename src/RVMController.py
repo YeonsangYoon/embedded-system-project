@@ -28,12 +28,13 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5 import uic
-
+import argparse
 import serial
 #import RPI.GPIO as GPIO
 
-port = '/dev/ttyACM0'                           # USB serial interface
-serialToArduino = serial.Serial(port, 9600)
+
+#port = '/dev/ttyACM0'                           # USB serial interface
+#serialToArduino = serial.Serial(port, 9600)
 
 # machine stat
 RVM_STATE_OFF = 0
@@ -77,9 +78,17 @@ class RVM_Stat:
         else:
             self.exec_stat = EXEC_NONE_TYPE
             if result == 'pet':
+                printB('페트병 하나 처리되었습니다')
+                printU("1 trash complete")
                 self.recycling_number['pet'] += 1
             elif result == 'can':
+                printB('캔 하나 처리되었습니다')
+                printU("1 trash complete")
                 self.recycling_number['can'] += 1
+            elif result == 'return':
+                printB('잘못된 쓰레기를 다시 반송합니다')
+                printU('1 trash return')
+
 
     def putTrashIntoRVM(self, result):
         if result == 'can':
@@ -132,9 +141,9 @@ class mainWindow(QMainWindow,form_class1) :
         self.err_sig.signal1.connect(self.error_pop)
 
         self.qPixmapVar = QPixmap()
-        self.qPixmapVar.load('img/can.png')
+        self.qPixmapVar.load('img/can.PNG')
         self.label_10.setPixmap(self.qPixmapVar)
-        self.qPixmapVar.load('img/pet.png')
+        self.qPixmapVar.load('img/pet.PNG')
         self.label_17.setPixmap(self.qPixmapVar)
 
 
@@ -256,36 +265,24 @@ def main_Cycle():
     # main cycle
     while 1:
 
-        if RVM_status.machine_stat != RVM_STATE_ON:
-            print("#1 : check condition....")    #debug
+        if RVM_status.machine_stat != RVM_STATE_ON:     #1 machine stat check
             printB('start 버튼을 눌러주세요')
-            printU("#1 : check condition....")
-            time.sleep(1)
-        else :        #1 machine stat check
-
+            time.sleep(0.5)
+        else :
             #2 initial condition check
-            #retval = checkObjectCond()
             if checkObjectCond() < 0:
                 errorExit()
 
-            #retval = checkLoadCell()
             elif checkLoadCell() < 0:
                 errorExit()
 
             #3 rail move command 
-            #retval = moveCommand('Dzone')
             elif moveCommand('Dzone') < 0:
                 errorExit()
 
             #4 판별 요청
-            #resultD = requests.get("URL")
-            #resultD = requestD()
-
-            # 분류기 작동
-            #retval = moveCommand(resultD)
             else :
                 resultD = requestD()
-                #resultD = 'can'   
                 if moveCommand(resultD)<0:
                     errorExit()
 
@@ -293,10 +290,6 @@ def main_Cycle():
                 # 스탯 업데이트
                 RVM_status.updateStatus(resultD)
                 main_window.can_pet()
-                #debug msg
-                print("debug msg : 1 trash complete")
-                printB('쓰레기가 무사히 버려졌습니다.')
-                printU("debug msg : 1 trash complete")
                 time.sleep(3)
                 main_window.button_text()
 
@@ -310,8 +303,6 @@ def main_Cycle():
                 main_window.button_text()
 
                 
-            
-
 
 def errorExit():
     if RVM_status.error_stat == Error:
@@ -322,49 +313,44 @@ def errorExit():
 
 #IR sensor
 def checkObjectCond():
-    #debug code
-    #print("#2 : check object condition.....")
     RVM_status.exec_stat = EXEC_IRSENCOR_TYPE
     printB('쓰레기를 넣어 주세요')
-    printU("#2 : check object condition.....")
+    printU("#2 : check object condition")
     time.sleep(2)
     return retValOK
 
 def checkLoadCell():
 
     RVM_status.exec_stat = EXEC_LOADCELL_TYPE
-    printU('#3 : check object weight....')
+    printB('쓰레기 처리중 입니다')
+    printU('#3 : check object weight')
     time.sleep(3)
     return retValOK
 
 def moveCommand(destination):
-    printB('쓰레기가 이동하고 있습니다.')
 
     if destination == 'can':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        #print("#6 : moving to can zone.....")
-        printU("#6 : moving to can zone.....")
+        printU("#6 : moving to can zone")
         time.sleep(3)
         return retValOK
 
     elif destination == 'pet':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        serialToArduino.writelines('1')
-        printU("#6 : moving to pet zone.....")
+        #serialToArduino.writelines('1')
+        printU("#6 : moving to pet zone")
         time.sleep(2)
         return retValOK
 
     elif destination == 'Dzone':
         RVM_status.exec_stat = EXEC_RAIL_TYPE
-        #print("#4 : moving to discriminating zone.....")
-        printU("#4 : moving to discriminating zone.....")
+        printU("#4 : moving to discriminating zone")
         time.sleep(3)
         return retValOK
 
     elif destination == 'return':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        #print("#6 : moving to entrance.....")
-        printU("#6 : moving to entrance.....")
+        printU("#6 : moving to entrance")
         time.sleep(3)
         return retValOK
 
@@ -373,15 +359,11 @@ def moveCommand(destination):
 
 def requestD():
     RVM_status.exec_stat = EXEC_IMAGEPROCESS_TYPE
-    #print("#5 : discriminating image....")
-    printB('쓰레기가 분석되고 있습니다.')
-    printU("#5 : discriminating image....")
+    printU("#5 : discriminating image")
 
     #linux
     try:
-        #response = requests.post("http://localhost:5000/requestd")
         response = requests.post("http://0.0.0.0:5000/requestd")
-    #except ConnectionRefusedError:
     except:
         return errorExit()
     
@@ -397,17 +379,13 @@ def requestD():
 # stat class init
 RVM_status = RVM_Stat() 
 
- 
-#시리얼 통신 인터페이스 init
-
-
 # 유저 인터페이스 init
 app = QApplication(sys.argv) 
-
 phone_window = phoneWindow() 
 main_window = mainWindow()
 main_window.show()
 
+# main Cycle init
 t1 = threading.Thread(target = main_Cycle)
 t1.daemon = False
 

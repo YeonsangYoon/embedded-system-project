@@ -3,6 +3,7 @@ import os
 import sys
 import subprocess
 import time
+import random
 
 app = Flask(__name__)
 
@@ -15,9 +16,15 @@ def start_discrimination():
     
 
     # YOLO 실행하는 내용 추가하세요..... 
-    
-    
-    return 'pet'
+
+    q = random.randint(1,10)
+    if q <= 2:
+        return 'return'
+    elif q > 2 and q <= 8:
+        return 'pet'
+    elif q > 8 and q <= 10:
+        return 'can'
+
     
 
 if __name__ == '__main__':
