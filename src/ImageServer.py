@@ -4,6 +4,7 @@ import sys
 import subprocess
 import time
 import random
+import subprocess
 
 app = Flask(__name__)
 
@@ -16,7 +17,13 @@ def start_discrimination():
     
 
     # YOLO 실행하는 내용 추가하세요..... 
+    """
+    args = './darknet detect yolov3.cfg  backup/without_crawler/yolov3_10000.weights data/test/test_10.jpg -threshold 0.7 >> test_result_wocrawler_v1.txt'
+    subprocess.call(args, shell=True)
+    """
 
+
+    # debugging code
     q = random.randint(1,10)
     if q <= 2:
         return 'return'
