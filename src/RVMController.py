@@ -30,11 +30,12 @@ from PyQt5.QtGui import *
 from PyQt5 import uic
 import argparse
 import serial
-#import RPI.GPIO as GPIO
+import RPI.GPIO as GPIO
 
 
-#port = '/dev/ttyACM0'                           # USB serial interface
-#serialToArduino = serial.Serial(port, 9600)
+####################################################################################
+#                                    Data Type                                     #
+####################################################################################
 
 # machine stat
 RVM_STATE_OFF = 0
@@ -51,6 +52,11 @@ EXEC_ROUTING_TYPE = 5
 # Error Type
 retValOK = 1
 Error = -1
+
+
+####################################################################################
+#                                Class & Functions                                 #
+####################################################################################
 
 class RVM_Stat: 
 
@@ -317,6 +323,9 @@ def checkObjectCond():
     printB('쓰레기를 넣어 주세요')
     printU("#2 : check object condition")
     time.sleep(2)
+    while 1:
+        ret = GPIO.input(11)
+
     return retValOK
 
 def checkLoadCell():
@@ -378,6 +387,14 @@ def requestD():
 
 # stat class init
 RVM_status = RVM_Stat() 
+
+# USB serial interface
+port = '/dev/ttyACM0'                           
+serialToArduino = serial.Serial(port, 9600)
+
+# GPIO setting
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(11,GPIO.IN)
 
 # 유저 인터페이스 init
 app = QApplication(sys.argv) 
