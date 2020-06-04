@@ -30,7 +30,15 @@ from PyQt5.QtGui import *
 from PyQt5 import uic
 import argparse
 import serial
-import RPi.GPIO as GPIO
+
+# 디버그 모드 명령행 인자 설정 
+parser = argparse.ArgumentParser()
+parser.add_argument('--debug', dest = 'debug', action = 'store_true')
+args = parser.parse_args()
+debug = args.debug
+
+if debug == False:
+    import RPi.GPIO as GPIO
 
 
 ####################################################################################
@@ -322,45 +330,62 @@ def checkObjectCond():
     RVM_status.exec_stat = EXEC_IRSENCOR_TYPE
     printB('쓰레기를 넣어 주세요')
     printU("#2 : check object condition")
-    time.sleep(2)
 
-    while GPIO.input(11):
-        pass
+    if debug:
+        time.sleep(2)
+    else:
+        while GPIO.input(11):
+            pass
+
     return retValOK
 
 def checkLoadCell():
-
     RVM_status.exec_stat = EXEC_LOADCELL_TYPE
     printB('쓰레기 처리중 입니다')
     printU('#3 : check object weight')
-    time.sleep(3)
+    
+    if debug:
+        time.sleep(3)
+
     return retValOK
 
 def moveCommand(destination):
-
     if destination == 'can':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
         printU("#6 : moving to can zone")
-        time.sleep(3)
+
+        if debug:
+            time.sleep(3)
+
         return retValOK
 
     elif destination == 'pet':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        #serialToArduino.writelines('1')
         printU("#6 : moving to pet zone")
-        time.sleep(2)
+
+        if debug:
+            time.sleep(2)
+        else:
+            serialToArduino.writelines('1')
+
         return retValOK
 
     elif destination == 'Dzone':
         RVM_status.exec_stat = EXEC_RAIL_TYPE
         printU("#4 : moving to discriminating zone")
-        time.sleep(3)
+
+        if debug:
+            time.sleep(3)
+
         return retValOK
 
     elif destination == 'return':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
         printU("#6 : moving to entrance")
-        time.sleep(3)
+
+        if debug:
+            time.sleep(3)
+            
         return retValOK
 
     else:
@@ -388,13 +413,14 @@ def requestD():
 # stat class init
 RVM_status = RVM_Stat() 
 
-# USB serial interface
-#port = '/dev/ttyACM0'                           
-#serialToArduino = serial.Serial(port, 9600)
+if not debug:
+    # USB serial interface
+    port = '/dev/ttyACM0'                           
+    serialToArduino = serial.Serial(port, 9600)
 
-# GPIO setting
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(11,GPIO.IN)
+    # GPIO setting
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setup(11,GPIO.IN)
 
 # 유저 인터페이스 init
 app = QApplication(sys.argv) 
