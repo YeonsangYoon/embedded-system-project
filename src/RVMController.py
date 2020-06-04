@@ -323,9 +323,6 @@ def checkObjectCond():
     printB('쓰레기를 넣어 주세요')
     printU("#2 : check object condition")
     time.sleep(2)
-    while 1:
-        ret = GPIO.input(11)
-
     return retValOK
 
 def checkLoadCell():
