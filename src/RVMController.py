@@ -30,7 +30,7 @@ from PyQt5.QtGui import *
 from PyQt5 import uic
 import argparse
 import serial
-import RPI.GPIO as GPIO
+import RPi.GPIO as GPIO
 
 
 ####################################################################################
@@ -323,6 +323,9 @@ def checkObjectCond():
     printB('쓰레기를 넣어 주세요')
     printU("#2 : check object condition")
     time.sleep(2)
+
+    while GPIO.input(11):
+        pass
     return retValOK
 
 def checkLoadCell():
@@ -386,8 +389,8 @@ def requestD():
 RVM_status = RVM_Stat() 
 
 # USB serial interface
-port = '/dev/ttyACM0'                           
-serialToArduino = serial.Serial(port, 9600)
+#port = '/dev/ttyACM0'                           
+#serialToArduino = serial.Serial(port, 9600)
 
 # GPIO setting
 GPIO.setmode(GPIO.BOARD)
