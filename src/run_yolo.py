@@ -2,8 +2,8 @@ import os
 import subprocess
 import time
 
-cmd_capture = "nvgstcapture-1.0 --cus-prev-res=1920x1080 -A blahblahblah yeon goo sil ga seo sseun dang"
-cmd_yolo = "./darknet detector test data/obj.data cfg/yolov3.cfg backup/yolov3_last.weights rvm/image/test_1.jpg >> detect.txt"
+cmd_capture = "rm -rf *.jpg && nvgstcapture-1.0 --cus-prev-res=1920x1080 -A blahblahblah yeon goo sil ga seo sseun dang"
+cmd_yolo = "./darknet detector test data/obj.data cfg/yolov3.cfg backup/yolov3_last.weights rvm/image/*.jpg >> detect.txt"
 
 def capture_vid():
     try:
