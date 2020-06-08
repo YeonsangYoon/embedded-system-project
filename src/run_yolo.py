@@ -2,12 +2,12 @@ import os
 import subprocess
 import time
 
-cmd_capture = "rm -rf *.jpg && nvgstcapture-1.0 --cus-prev-res=1920x1080 -A blahblahblah yeon goo sil ga seo sseun dang"
+cmd_capture = "rm -rf *.jpg && nvgstcapture-1.0 --cus-prev-res=1920x1080 -A"
 cmd_yolo = "./darknet detector test data/obj.data cfg/yolov3.cfg backup/yolov3_last.weights rvm/image/*.jpg >> detect.txt"
 
 def capture_vid():
     try:
-        subprocess.call(cmd_yolo, shell=True, timeout=4)
+        subprocess.call(cmd_capture, shell=True, timeout=4)
     except subprocess.TimeoutExpired:
         print("Timeout during execution")
 
@@ -18,8 +18,8 @@ def test_yolo():
         print("Timeout during execution")
 
 def parse_result(file_name, threshold):
-    f = open(file_name)
-    lines = f.readlines()
+    with open(file_name, 'r') as f:
+        lines = f.readlines()
     lines = lines[1:]
     can = []
     pet = []
@@ -33,18 +33,18 @@ def parse_result(file_name, threshold):
             can.append(int(each[1]))
     can_possibility = sum(pet)/len(pet)
     pet_possibility = sum(pet)/len(pet)
-    #0 is idle, 1 is pet, 2 is can
+
     if (max(can_possibility, pet_possibility) < threshold):
-        return 0, 0
+        return 'return'
     elif(can_possibility>pet_possibility):
-        return 1, pet_possibility
+        return 'pet'
     else:
-        return 2, can_possibility
+        return 'can'
 
 def main():
     capture_vid()
     test_yolo()
-    petOrCan, possibility = parse_result('D:\workspace_py\darknet_parse\parse_1.txt', 50)
+    petOrCan = parse_result('./detect.txt', 50)
 
 if __name__ == '__main__':
     main()
