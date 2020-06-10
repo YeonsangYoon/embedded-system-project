@@ -85,23 +85,28 @@ class RVM_Stat:
         self.machine_stat = RVM_STATE_OFF
 
     def updateStatus(self, result):
+        if result == 'pet':
+            printB('페트병 하나 처리되었습니다')
+            printU("1 trash complete")
+            self.recycling_number['pet'] += 1
+        elif result == 'can':
+            printB('캔 하나 처리되었습니다')
+            printU("1 trash complete")
+            self.recycling_number['can'] += 1
+        elif result == 'return':
+            printB('잘못된 쓰레기를 다시 반송합니다')
+            printU('1 trash return')
+
         if self.machine_stat == RVM_STATE_OFF:
-            self.exec_stat = EXEC_NONE_TYPE
+            time.sleep(2)
+            main_window.end_report()
+            while(self.exec_stat):
+                continue
             self.recycling_number['can'] = 0
             self.recycling_number['pet'] = 0
         else:
             self.exec_stat = EXEC_NONE_TYPE
-            if result == 'pet':
-                printB('페트병 하나 처리되었습니다')
-                printU("1 trash complete")
-                self.recycling_number['pet'] += 1
-            elif result == 'can':
-                printB('캔 하나 처리되었습니다')
-                printU("1 trash complete")
-                self.recycling_number['can'] += 1
-            elif result == 'return':
-                printB('잘못된 쓰레기를 다시 반송합니다')
-                printU('1 trash return')
+
 
 
     def putTrashIntoRVM(self, result):
@@ -118,7 +123,7 @@ class RVM_Stat:
 form_class1 = uic.loadUiType("untitled.ui")[0]
 form_class2 = uic.loadUiType("phoneNumber.ui")[0]
 form_class3 = uic.loadUiType("popup.ui")[0]
-
+form_class4 = uic.loadUiType("popup2.ui")[0]
 
 
 
@@ -140,6 +145,13 @@ class error_sig(QObject) :
     def on(self, f):
         self.signal1.emit(f)
 
+class end_sig(QObject) :
+
+    signal1 = pyqtSignal()
+
+    def on(self):
+        self.signal1.emit()
+
 # 화면을 띄우는데 사용되는 Class 선언
 class mainWindow(QMainWindow,form_class1) :
 
@@ -152,7 +164,9 @@ class mainWindow(QMainWindow,form_class1) :
         #self.pbtn_test_p.clicked.connect(self.test_p)
         self.pbtn_start.clicked.connect(self.button_start)
         self.err_sig = error_sig()
+        self.end_sig = end_sig()
         self.err_sig.signal1.connect(self.error_pop)
+        self.end_sig.signal1.connect(self.end_pop)
 
         self.qPixmapVar = QPixmap()
         self.qPixmapVar.load('img/can.PNG')
@@ -163,13 +177,11 @@ class mainWindow(QMainWindow,form_class1) :
 
     def set_message_big(self,message) :
         self.m1 = message
+        self.label_intro.setText(self.m1)
 
     def set_message_small(self,message) :
         self.m2 = message
-
-    def show_message(self) :
-        self.label_intro.setText(self.m1+"\n"+self.m2)
-
+        self.label_intro_2.setText(self.m2)
 
     def can_pet(self) :
         self.label_can_num.setText(str(RVM_status.recycling_number['can'])+'개')
@@ -205,7 +217,6 @@ class mainWindow(QMainWindow,form_class1) :
     def error_pop(self,mesg) :
         self.set_message_big('에러가 발생했습니다.')
         self.set_message_small('Error')
-        self.show_message()
 
         p = errPopDialog()
         p.exec_()
@@ -217,13 +228,19 @@ class mainWindow(QMainWindow,form_class1) :
             RVM_status.error_stat=retValOK
         """
 
+    def end_report(self):
+        self.end_sig.on()
+    
+    def end_pop(self):
+        p = endPopDialog()
+        p.exec_()
+
+
 def printU(mesg) :
     main_window.set_message_small(mesg)
-    main_window.show_message()
 
 def printB(mesg) :
     main_window.set_message_big(mesg)
-    main_window.show_message()
 
 class errPopDialog(QDialog,form_class3):
     def __init__(self):
@@ -235,7 +252,20 @@ class errPopDialog(QDialog,form_class3):
     def errorOk(self):
         RVM_status.terminationRVM()
         RVM_status.updateStatus(0)
+        self.close()
         RVM_status.error_stat = retValOK
+        
+
+class endPopDialog(QDialog,form_class4):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        self.can_num.setText('can : %s개' %RVM_status.recycling_number['can'])
+        self.pet_num.setText('pet : %s개' %RVM_status.recycling_number['pet'])
+        self.pushButton.clicked.connect(self.endOk)
+
+    def endOk(self):
+        RVM_status.exec_stat = EXEC_NONE_TYPE
         self.close()
     
             
@@ -281,6 +311,7 @@ def main_Cycle():
 
         if RVM_status.machine_stat != RVM_STATE_ON:     #1 machine stat check
             printB('start 버튼을 눌러주세요')
+            printU('')
             time.sleep(0.5)
         else :
             #2 initial condition check
@@ -310,7 +341,7 @@ def main_Cycle():
             elif RVM_status.error_stat == Error :
                 #debug msg
                 while RVM_status.error_stat == Error :
-                    time.sleep(1)
+                    continue
                 
                 printU("Error fixed.. restart")
                 time.sleep(2)
@@ -426,7 +457,7 @@ if not debug:
 app = QApplication(sys.argv) 
 phone_window = phoneWindow() 
 main_window = mainWindow()
-main_window.show()
+main_window.showFullScreen()
 
 # main Cycle init
 t1 = threading.Thread(target = main_Cycle)
