@@ -30,7 +30,8 @@ def parse_result(file_name, threshold):
 
     for i in range(len(lines)):
         lines[i] = lines[i].replace(":", "")
-        lines[i] = lines[i].replace("%\n", "")
+        lines[i] = lines[i].replace("%", "")
+        lines[i] = lines[i].replace("\n", "")
         each = lines[i].split()
         if(each[0] == 'pet'):
             pet.append(int(each[1]))
