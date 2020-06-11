@@ -362,7 +362,7 @@ def checkObjectCond():
     if debug:
         time.sleep(2)
     else:
-        while while GPIO.input(11) & RVM_status.machine_stat:
+        while GPIO.input(11) & RVM_status.machine_stat:
             pass
 
     return retValOK
