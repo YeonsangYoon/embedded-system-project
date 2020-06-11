@@ -24,10 +24,6 @@ def parse_result(file_name, threshold):
     can = []
     pet = []
 
-    # empty result => 'return'
-    if not lines:
-        return 'return'
-
     for i in range(len(lines)):
         lines[i] = lines[i].replace(":", "")
         lines[i] = lines[i].replace("%", "")
@@ -37,6 +33,12 @@ def parse_result(file_name, threshold):
             pet.append(int(each[1]))
         else:
             can.append(int(each[1]))
+
+    if not pet:
+        pet.append(0)
+    if not can:
+        can.append(0)
+
     can_possibility = sum(pet)/len(pet)
     pet_possibility = sum(pet)/len(pet)
 
