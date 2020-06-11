@@ -308,16 +308,17 @@ def main_Cycle():
     # main cycle
     while 1:
 
-        #1 machine stat check
+        #0 machine stat check
         if RVM_status.machine_stat != RVM_STATE_ON:
             printB('start 버튼을 눌러주세요')
             printU('')
             time.sleep(0.1)
         else :
-            #2 initial condition check
+            #1 Check IR sensor
             if checkObjectCond() < 0:
                 errorExit()
 
+            #2 Check Load cell 
             elif checkLoadCell() < 0:
                 errorExit()
 
@@ -328,6 +329,8 @@ def main_Cycle():
             #4 Request discrimination
             else :
                 resultD = requestD()
+
+                #5 rail move command 
                 if moveCommand(resultD)<0:
                     errorExit()
 
@@ -358,7 +361,7 @@ def errorExit():
 def checkObjectCond():
     RVM_status.exec_stat = EXEC_IRSENCOR_TYPE
     printB('쓰레기를 넣어 주세요')
-    printU("#2 : check object condition")
+    printU("#1 : check object condition")
 
     if debug:
         time.sleep(2)
@@ -372,7 +375,7 @@ def checkObjectCond():
 def checkLoadCell():
     RVM_status.exec_stat = EXEC_LOADCELL_TYPE
     printB('쓰레기 처리중 입니다')
-    printU('#3 : check object weight')
+    printU('#2 : check object weight')
     
     if debug:
         time.sleep(3)
@@ -382,7 +385,7 @@ def checkLoadCell():
 def moveCommand(destination):
     if destination == 'can':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        printU("#6 : moving to can zone")
+        printU("#5 : moving to can zone")
 
         if debug:
             time.sleep(3)
@@ -391,7 +394,7 @@ def moveCommand(destination):
 
     elif destination == 'pet':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        printU("#6 : moving to pet zone")
+        printU("#5 : moving to pet zone")
 
         if debug:
             time.sleep(2)
@@ -402,7 +405,7 @@ def moveCommand(destination):
 
     elif destination == 'Dzone':
         RVM_status.exec_stat = EXEC_RAIL_TYPE
-        printU("#4 : moving to discriminating zone")
+        printU("#3 : moving to discriminating zone")
 
         if debug:
             time.sleep(3)
@@ -411,7 +414,7 @@ def moveCommand(destination):
 
     elif destination == 'return':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        printU("#6 : moving to entrance")
+        printU("#5 : moving to entrance")
 
         if debug:
             time.sleep(3)
@@ -423,7 +426,7 @@ def moveCommand(destination):
 
 def requestD():
     RVM_status.exec_stat = EXEC_IMAGEPROCESS_TYPE
-    printU("#5 : discriminating image")
+    printU("#4 : discriminating image")
 
     #linux
     try:
