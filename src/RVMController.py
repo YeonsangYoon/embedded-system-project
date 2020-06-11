@@ -98,7 +98,6 @@ class RVM_Stat:
             printU('1 trash return')
 
         if self.machine_stat == RVM_STATE_OFF:
-            time.sleep(2)
             main_window.end_report()
             while(self.exec_stat):
                 continue
@@ -335,7 +334,6 @@ def main_Cycle():
                 # 스탯 업데이트
                 RVM_status.updateStatus(resultD)
                 main_window.can_pet()
-                time.sleep(3)
                 main_window.button_text()
 
             elif RVM_status.error_stat == Error :
@@ -344,7 +342,6 @@ def main_Cycle():
                     continue
                 
                 printU("Error fixed.. restart")
-                time.sleep(2)
                 main_window.button_text()
 
                 
