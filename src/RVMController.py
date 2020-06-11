@@ -308,10 +308,11 @@ def main_Cycle():
     # main cycle
     while 1:
 
-        if RVM_status.machine_stat != RVM_STATE_ON:     #1 machine stat check
+        #1 machine stat check
+        if RVM_status.machine_stat != RVM_STATE_ON:
             printB('start 버튼을 눌러주세요')
             printU('')
-            time.sleep(0.5)
+            time.sleep(0.1)
         else :
             #2 initial condition check
             if checkObjectCond() < 0:
@@ -324,14 +325,14 @@ def main_Cycle():
             elif moveCommand('Dzone') < 0:
                 errorExit()
 
-            #4 판별 요청
+            #4 Request discrimination
             else :
                 resultD = requestD()
                 if moveCommand(resultD)<0:
                     errorExit()
 
             if RVM_status.error_stat == retValOK:
-                # 스탯 업데이트
+                # Update Status
                 RVM_status.updateStatus(resultD)
                 main_window.can_pet()
                 main_window.button_text()
@@ -362,8 +363,9 @@ def checkObjectCond():
     if debug:
         time.sleep(2)
     else:
-        while GPIO.input(11) & RVM_status.machine_stat:
-            pass
+        # End cycle by pressing the End button before placing the object
+        while GPIO.input(11) and RVM_status.machine_stat:
+            time.sleep(0.1)
 
     return retValOK
 
