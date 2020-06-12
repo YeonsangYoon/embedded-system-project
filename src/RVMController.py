@@ -42,6 +42,7 @@ debug = args.debug
 
 if debug == False:
     import RPi.GPIO as GPIO
+    from hx711 import HX711
 
 
 ####################################################################################
@@ -63,6 +64,15 @@ EXEC_ROUTING_TYPE = 5
 # Error Type
 retValOK = 1
 Error = -1
+
+# Rasp GPIO Pin
+IR_Pin1 = 11
+IR_Pin2 = 12
+IR_Pin3 = 13
+IR_Pin4 = 14
+
+LC_DT_Pin = 23
+LC_SCK_Pin = 24
 
 
 ####################################################################################
@@ -454,9 +464,16 @@ if not debug:
     port = '/dev/ttyACM0'                           
     serialToArduino = serial.Serial(port, 9600)
 
-    # GPIO setting
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(11,GPIO.IN)
+    # Load Cell GPIO setting
+    GPIO.setwarnings(False)
+    hx711 = HX711(LC_DT_Pin, LC_SCK_Pin)
+    hx711.reset()
+
+    # IR Sensor GPIO setting
+    GPIO.setup(IR_Pin1,GPIO.IN)
+    GPIO.setup(IR_Pin2,GPIO.IN)
+    GPIO.setup(IR_Pin3,GPIO.IN)
+    GPIO.setup(IR_Pin4,GPIO.IN)
 
 # 유저 인터페이스 init
 app = QApplication(sys.argv) 
