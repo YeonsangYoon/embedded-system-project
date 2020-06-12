@@ -66,13 +66,13 @@ retValOK = 1
 Error = -1
 
 # Rasp GPIO Pin
-IR_Pin1 = 11
-IR_Pin2 = 12
-IR_Pin3 = 13
-IR_Pin4 = 14
+IR_Pin1 = 3         # Boad(5)
+IR_Pin2 = 4         # Boad(7)
+IR_Pin3 = 17        # Boad(11)
+IR_Pin4 = 27        # Boad(13)
 
-LC_DT_Pin = 23
-LC_SCK_Pin = 24
+LC_DT_Pin = 23      # Boad(16)
+LC_SCK_Pin = 24     # Boad(18)
 
 
 ####################################################################################
@@ -380,7 +380,12 @@ def checkObjectCond():
         time.sleep(2)
     else:
         # End cycle by pressing the End button before placing the object
-        while GPIO.input(11) and RVM_status.machine_stat:
+        while GPIO.input(IR_Pin1) and \
+            GPIO.input(IR_Pin2) and \
+            GPIO.input(IR_Pin3) and \
+            GPIO.input(IR_Pin4) and \
+            RVM_status.machine_stat:
+
             time.sleep(0.1)
 
     return retValOK
@@ -392,16 +397,21 @@ def checkLoadCell():
     
     if debug:
         time.sleep(3)
+    else:
+        while (hx711._read()):      # 조건문에 scaling 하는 수식 넣어
+            pass
 
     return retValOK
 
 def moveCommand(destination):
-    if destination == 'can':
-        RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        printU("#5 : moving to can zone")
+    if destination == 'Dzone':
+        RVM_status.exec_stat = EXEC_RAIL_TYPE
+        printU("#3 : moving to discriminating zone")
 
         if debug:
             time.sleep(3)
+        else:
+            serialToArduino.writelines('1')
 
         return retValOK
 
@@ -412,16 +422,18 @@ def moveCommand(destination):
         if debug:
             time.sleep(2)
         else:
-            serialToArduino.writelines('1')
+            serialToArduino.writelines('2')
 
         return retValOK
 
-    elif destination == 'Dzone':
-        RVM_status.exec_stat = EXEC_RAIL_TYPE
-        printU("#3 : moving to discriminating zone")
+    elif destination == 'can':
+        RVM_status.exec_stat = EXEC_ROUTING_TYPE
+        printU("#5 : moving to can zone")
 
         if debug:
-            time.sleep(3)
+            time.sleep('1')
+        else:
+            serialToArduino.writelines('3')
 
         return retValOK
 
@@ -431,6 +443,8 @@ def moveCommand(destination):
 
         if debug:
             time.sleep(3)
+        else:
+            serialToArduino.writelines('4')
             
         return retValOK
 
@@ -447,8 +461,8 @@ def requestD():
     except:
         return errorExit()
     
-    #window(debug)
-    #response = requests.post("http://localhost:5000/requestd")
+    # window(debug)
+    # response = requests.post("http://localhost:5000/requestd")
 
     return response.text
 
