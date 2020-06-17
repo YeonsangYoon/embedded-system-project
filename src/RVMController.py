@@ -423,20 +423,34 @@ def moveCommand(destination):
         printU("#3 : moving to discriminating zone")
 
         if debug:
-            time.sleep(3)
+            time.sleep(1)
+            return retValOK
         else:
-            serialToArduino.writelines('1')
+            ser.write('1'.encode())
+            
+            ret = ser.readline()
 
-        return retValOK
+            if ret.decode() == 'y':
+                return retValOK
+            else:
+                return Error
 
     elif destination == 'pet':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
         printU("#5 : moving to pet zone")
 
         if debug:
-            time.sleep(2)
+            time.sleep(1)
+            return retValOK
         else:
-            serialToArduino.writelines('2')
+            ser.writelines('2'.encode())
+
+            ret = ser.readline()
+
+            if ret.decode() == 'y':
+                return retValOK
+            else:
+                return Error
 
         return retValOK
 
@@ -445,9 +459,17 @@ def moveCommand(destination):
         printU("#5 : moving to can zone")
 
         if debug:
-            time.sleep('1')
+            time.sleep(1)
+            return retValOK
         else:
-            serialToArduino.writelines('3')
+            ser.writelines('3')
+
+            ret = ser.readline()
+
+            if ret.decode() == 'y':
+                return retValOK
+            else:
+                return Error
 
         return retValOK
 
@@ -456,11 +478,17 @@ def moveCommand(destination):
         printU("#5 : moving to entrance")
 
         if debug:
-            time.sleep(3)
+            time.sleep(1)
+            return retValOK
         else:
-            serialToArduino.writelines('4')
-            
-        return retValOK
+            ser.writelines('4')
+
+            ret = ser.readline()
+
+            if ret.decode() == 'y':
+                return retValOK
+            else:
+                return Error
 
     else:
         return Error
@@ -490,7 +518,7 @@ RVM_status = RVM_Stat()
 if not debug:
     # USB serial interface
     port = '/dev/ttyACM0'                           
-    serialToArduino = serial.Serial(port, 9600)
+    ser = serial.Serial(port, 9600, timeout = 2)
 
     # Load Cell GPIO setting
     GPIO.setwarnings(False)
