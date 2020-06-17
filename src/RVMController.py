@@ -398,10 +398,23 @@ def checkLoadCell():
     if debug:
         time.sleep(3)
     else:
-        while (hx711._read()):      # 조건문에 scaling 하는 수식 넣어
-            pass
+        weights = []
+        
+        for i in range(20):
+            weights.append(hx711._read())
 
-    return retValOK
+            if False in weigths:
+                weights.remove(False)
+            
+        weigths.remove(max(weights))
+        weights.remove(min(weights))
+
+        avg = sum(weights) / len(weights)
+
+        if avg < -250000:
+            return Error
+        else:
+            return retValOK
 
 def moveCommand(destination):
     if destination == 'Dzone':
