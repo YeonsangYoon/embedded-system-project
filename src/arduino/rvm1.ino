@@ -60,84 +60,85 @@ Stepper myStepper(stepsPerRevolution,49,48,47,46);
 
 void setup() {
 
-  pinMode(in1, OUTPUT);
-  pinMode(in2, OUTPUT);
-  pinMode(M2_in1, OUTPUT);
-  pinMode(M2_in2, OUTPUT);
-  pinMode(M3_in1, OUTPUT);
-  pinMode(M3_in2, OUTPUT);
-  
-  Encoderlnit(); // initialize the module
-  myStepper.setSpeed(12); 
+    pinMode(in1, OUTPUT);
+    pinMode(in2, OUTPUT);
+    pinMode(M2_in1, OUTPUT);
+    pinMode(M2_in2, OUTPUT);
+    pinMode(M3_in1, OUTPUT);
+    pinMode(M3_in2, OUTPUT);
 
-  Serial.begin(9600); //initialize the serial port
+    Encoderlnit(); // initialize the module
+    myStepper.setSpeed(12); 
+
+    Serial.begin(9600); //initialize the serial port
 }
 
 void loop()
 {
-  Serial.print("M2_en : ");
-  Serial.print(M2_duration);
-  Serial.print("\tM3_en : ");
-  Serial.println(M3_duration);
-  delay(100);
-  
-  if(Serial.available() > 0)
-  {
-    Serial.print("M2_en : ");
-    Serial.println(M2_duration);
-    in_data = Serial.read();
-  
-    Serial.print("in_data : ");
-    Serial.println(in_data);
-  
-    delay(50);
+/*
+  	Serial.print("M2_en : ");
+  	Serial.print(M2_duration);
+  	Serial.print("\tM3_en : ");
+  	Serial.println(M3_duration);
+  	delay(100);
+*/
+  	if(Serial.available() > 0)
+  	{
+  	 	// Serial.print("M2_en : ");
+  	  	// Serial.println(M2_duration);
+  	  	in_data = Serial.read();
+  	/*
+  	  	Serial.print("in_data : ");
+  	  	Serial.println(in_data);
 
-    switch(in_data)
-    {
-
-      case '1' :
-    //  stepM(stepsPerRevolution*1);
-    //  stepM(stepsPerRevolution*-1);
-    //  M1_CW( 255,1000);
-      M3_CW(150);
-     // M2_CCW(200,150);
-      //M1_CW( 150,500);
-      M3_CCW(150);
-        Flush();
-        break;
-    
-      case '2' :    
-      //M2_getback(30, 100, 300);
-  //    Serial.println("case 1 : Done");
-  //    Serial.println('A');
-      Flush();
-      break;
-
-      case '3' :
-      M2_stop();
-  //    Serial.println("case 1 : Done");
-  //    Serial.println('3');
-      Flush();
-      break;
-    
-      default :
-      Serial.println(in_data);
-      Serial.println("Err /n");
-      break;
-    }
+  	  	delay(50);
+	*/
+    	switch(in_data)
+    	{
+		
+    	  	case '1' :  // Dzone
+    	  		stepM(stepsPerRevolution*-1.3);
+    	  		M1_CW(255,1500);
+    	  		Serial.write('y');
+				stepM(stepsPerRevolution*1.3);
+				M2_duration = 0;
+    	  		M3_duration = 0;
+    	  		Flush();
+    	  		break;
+		
+    	  	case '2' : // pet   
+    	  		M3_CW(900);
+    	  		M1_CW(255,800);
+    	  		M3_CCW(900);
+    	  		Serial.write('y');
+    	  		Flush();
+    	  		break;
+	
+    	  	case '3' :  // can
+    	  		M2_CW(5500,250);
+    	  		M2_CCW(5500,250);
+    	  		Serial.write('y');
+    	  		Flush();
+    	  		break;
+	
+    	  	case '4':  // return
+    	  		M1_CCW(255,2500);
+    	  		Serial.write('y');
+    	  		Flush();
+    	  		break;
+		
+    	  	default :
+    	  		Serial.write('E');
+    	  		Flush();
+    	  		break;
+    	}
   }
- // Serial.print ("Pulse : ");
- // Serial.println(M3_duration);
 }
 
-void Flush()
+void Flush()    //남은 incoming 버퍼 지우기
 {
-  if(Serial.available() > 0)
-  {
-    //남은 incoming 버퍼 지우기
-    while(Serial.available() > 0)
-    {
-      Serial.read();
-    }
-  }
+  	while(Serial.available() > 0)
+  	{
+  	  	Serial.read();
+  	}
 }
