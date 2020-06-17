@@ -396,7 +396,8 @@ def checkLoadCell():
     printU('#2 : check object weight')
     
     if debug:
-        time.sleep(3)
+        time.sleep(2)
+        return retValOK
     else:
         weights = []
         
@@ -411,7 +412,7 @@ def checkLoadCell():
 
         avg = sum(weights) / len(weights)
 
-        if avg < -250000:
+        if avg < -200000 or avg > -100000:
             return Error
         else:
             return retValOK
