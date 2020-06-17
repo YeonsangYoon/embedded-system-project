@@ -1,5 +1,8 @@
 // DC Motor 1 : rail
 //a = enc , b = speed (0~255)
+//int count = 0;
+//int temp = 0;
+//int temp1 = 0; 
 void M1_CW(int b, int c)
 {
   Serial.print("1 : turn clockwise\n");
@@ -9,7 +12,6 @@ void M1_CW(int b, int c)
   delay(c);
 
   M1_stop();
-  Serial.println('y');
 }
 
 //a = enc , b = speed (0~255)
@@ -21,7 +23,6 @@ void M1_CCW( int b, int c) {
   delay(c);
 
   M1_stop();
-  Serial.println('y');
 }
 
 void M1_stop()
@@ -37,27 +38,54 @@ void M1_stop()
 //===============DC Motor 2 : Sifting==============================================================
 //a = enc , b = speed (0~255)
 void M2_CW(int a, int b) {
+
+  int temp = 0;
+  int temp1 = 0;
+  int count = 0;
   Serial.print("1 : turn clockwise\n");
+  
   while(abs(M2_duration) <= a)
   {
     Serial.print("M2_duration : ");
     Serial.println(M2_duration);
     digitalWrite(M2_in1,HIGH);
     digitalWrite(M2_in2,LOW);
-    analogWrite(analog2, b);      
+    analogWrite(analog2, b);   
+
+    Serial.print(count);
+    Serial.print(temp);
+    Serial.println(temp1);
+       
     if(Serial.read() == '0'){ //모터 회전이 없을때 루프 탈출
-      Serial.print("escape");
+//      Serial.print("escape");
       break;
     }
- //  delay(c);
+    
+    temp = M2_duration;
+    
+    if(temp==temp1)
+    {
+      count++;
+      if(count>50){
+        break;
+        }
+    }
+    else{
+      count = 0;
+      }
+    temp1 = M2_duration;
   }
+ //  delay(c);
   M2_stop();
-  Serial.println('y');
 }
 
 //a = enc , b = speed (0~255)
 void M2_CCW(int a, int b) 
 {
+  int temp = 0;
+  int temp1 = 0;
+  int count = 0;
+  
   Serial. print("2 : turn counterclockwise\n");
   while(abs(M2_duration) <= a)
   {
@@ -72,9 +100,21 @@ void M2_CCW(int a, int b)
       Serial.print("escape");
       break;
     }
+    
+    temp = M2_duration;
+    if(temp==temp1)
+    {
+      count++;
+      if(count>50){
+        break;
+        }
+    }
+    else{
+      count = 0;
+      }
+    temp1 = M2_duration;
   }
   M2_stop();
-  Serial.println('y');
 }
 
 void M2_stop() {
@@ -90,7 +130,9 @@ void M2_stop() {
 //a = enc 
 void M3_CW(int a)
 {
-  Serial.print("1 : turn clockwise\n");
+  int temp = 0;
+  int temp1 = 0;
+  int count = 0;
   while(abs(M3_duration) <= a){
     Serial.print("M3_duration : ");
     Serial.println(M3_duration);
@@ -100,31 +142,55 @@ void M3_CW(int a)
       Serial.print("escape");
       break;
     }
- //  delay(c);
+    temp = M2_duration;
+    if(temp==temp1)
+    {
+      count++;
+      if(count>50){
+        break;
+        }
+    }
+    else{
+      count = 0;
+      }
+    temp1 = M2_duration;
   }
   M3_stop();
-  Serial.println('y');
 }
 
 //a = enc , b = speed (0~255)
-void M3_CCW(int a) 
+void M3_CCW(int a)
 {
-  Serial. print("3 : turn counterclockwise\n");
-  while(abs(M3_duration) <= a)
-  {
-    digitalWrite(M3_in1, LOW);
-    digitalWrite(M3_in2, HIGH);   
-    if(Serial.read() == '0'){ 
+  int temp = 0;
+  int temp1 = 0;
+  int count = 0;
+  while(abs(M3_duration) <= a){
+    Serial.print("M3_duration : ");
+    Serial.println(M3_duration);
+    digitalWrite(M3_in1,LOW);
+    digitalWrite(M3_in2,HIGH);
+    if(Serial.read() == '0'){ //모터 회전이 없을때 루프 탈출
       Serial.print("escape");
       break;
     }
+    temp = M2_duration;
+    if(temp==temp1)
+    {
+      count++;
+      if(count>50){
+        break;
+        }
+    }
+    else{
+      count = 0;
+      }
+    temp1 = M2_duration;
   }
   M3_stop();
-  Serial.println('y');
 }
-
 void M3_stop() 
 {
+
   digitalWrite(M3_in1, LOW);
   digitalWrite(M3_in2, LOW);
 //  Serial.println("3 : stop");
