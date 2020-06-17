@@ -1,0 +1,17 @@
+<RCC>
+  <qresource prefix="newPrefix">
+    <file>img/pic6.png</file>
+    <file>img/pic5.png</file>
+    <file>img/pic4.png</file>
+    <file>img/bg.png</file>
+    <file>img/pic2.png</file>
+  </qresource>
+  <qresource prefix="font">
+    <file>font/12롯데마트드림Bold.ttf</file>
+    <file>font/12롯데마트드림Light.ttf</file>
+    <file>font/12롯데마트드림Medium.ttf</file>
+    <file>font/12롯데마트행복Bold.ttf</file>
+    <file>font/12롯데마트행복Light.ttf</file>
+    <file>font/12롯데마트행복Medium.ttf</file>
+  </qresource>
+</RCC>

@@ -132,22 +132,17 @@ class RVM_Stat:
 # user interface class
 # UI파일 연결
 # 단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
-form_class1 = uic.loadUiType("untitled.ui")[0]
+form_class1 = uic.loadUiType("new1.ui")[0]
 form_class2 = uic.loadUiType("phoneNumber.ui")[0]
-form_class3 = uic.loadUiType("popup.ui")[0]
-form_class4 = uic.loadUiType("popup2.ui")[0]
+form_class3 = uic.loadUiType("newpop2.ui")[0]
+form_class4 = uic.loadUiType("newpop1.ui")[0]
 
 
 
 def printE(mesg) :
     #main_window.error_pop(mesg)
     main_window.show_popup_ok_cancel('a','b')
-    '''ep = errorPOP
-    ep.show()
-    print('a')
-    app2 = QApplication(sys.argv) 
-    app2.exec_()
-    print('a')'''
+
 
 
 class error_sig(QObject) :
@@ -164,6 +159,14 @@ class end_sig(QObject) :
     def on(self):
         self.signal1.emit()
 
+class mes_sig(QObject) :
+
+    signal1 = pyqtSignal(str)
+
+    def on(self,m):
+        self.signal1.emit(m)
+
+
 # 화면을 띄우는데 사용되는 Class 선언
 class mainWindow(QMainWindow,form_class1) :
 
@@ -171,33 +174,38 @@ class mainWindow(QMainWindow,form_class1) :
     m2 = ''
     def __init__(self) :
         super().__init__()
+        self.fontDB = QFontDatabase()
+        self.fontDB.addApplicationFont(":/font/font/12롯데마트드림Bold.ttf")
+        self.fontDB.addApplicationFont(":/font/font/12롯데마트행복Bold.ttf")
         self.setupUi(self)
-        #self.pbtn_test_c.clicked.connect(self.test_c)
-        #self.pbtn_test_p.clicked.connect(self.test_p)
-        self.pbtn_start.clicked.connect(self.button_start)
+        self.title = '<html><head/><body><p align="center" style = "vertical-align:middle"><span style=" font-size:120pt; ">RVM</span><span style=" font-size:24pt; color:#000000;">(일사분란착착착)</span></p></body></html>'
+        self.p3.clicked.connect(self.button_start)
+        self.p2.setStyleSheet('background-image:url(":/newPrefix/img/pic2.png")')
         self.err_sig = error_sig()
         self.end_sig = end_sig()
+        self.mes_sig = mes_sig()
         self.err_sig.signal1.connect(self.error_pop)
         self.end_sig.signal1.connect(self.end_pop)
-
-        self.qPixmapVar = QPixmap()
-        self.qPixmapVar.load('img/can.PNG')
-        self.label_10.setPixmap(self.qPixmapVar)
-        self.qPixmapVar.load('img/pet.PNG')
-        self.label_17.setPixmap(self.qPixmapVar)
+        self.mes_sig.signal1.connect(self.set_message)
 
 
     def set_message_big(self,message) :
         self.m1 = message
-        self.label_intro.setText(self.m1)
+        self.mes_sig.on('normal')
 
     def set_message_small(self,message) :
         self.m2 = message
-        self.label_intro_2.setText(self.m2)
+        self.mes_sig.on('normal')
 
+    def set_message(self,m) :
+        if m == 'normal' :
+            self.p1.setText('<html><head/><body><p align="center"><span style=" font-size:47pt; color:#000000;">%s</span></p><p align="center"><span style=" font-size:30pt; color:#000000;">%s</span></p></body></html>' %(self.m1,self.m2))
+        elif m == 'title' :
+            self.p1.setText(self.title)
     def can_pet(self) :
-        self.label_can_num.setText(str(RVM_status.recycling_number['can'])+'개')
-        self.label_pet_num.setText(str(RVM_status.recycling_number['pet'])+'개')
+        self.p2_1.setText(str(RVM_status.recycling_number['pet'])+' 개')
+        self.p2_2.setText(str(RVM_status.recycling_number['can'])+' 개')
+        
 
     
 
@@ -210,18 +218,23 @@ class mainWindow(QMainWindow,form_class1) :
             RVM_status.terminationRVM()
             self.button_text()
             
-        #phone_window.ready()
-        #main_window.close()
-        #phone_window.show()
     
     def button_text(self) :
         if RVM_status.machine_stat == RVM_STATE_OFF:
             if RVM_status.exec_stat != EXEC_NONE_TYPE:
-                self.pbtn_start.setText('waiting')
+                pass
             else :
-                self.pbtn_start.setText('start')
+                self.mes_sig.on('title')
+                self.p2.setStyleSheet('background-image:url(":/newPrefix/img/pic2.png")')
+                self.p2_1.setText('')
+                self.p2_2.setText('')
+                self.p3.setText('시작')
         elif RVM_status.machine_stat == RVM_STATE_ON:
-            self.pbtn_start.setText('end')
+            if RVM_status.exec_stat == EXEC_NONE_TYPE:
+                self.p1.setText('페트병 혹은 캔을\n하나씩 넣어주세요')
+                self.p2.setStyleSheet('background-image:url(":/newPrefix/img/pic4.png")')
+                self.can_pet()
+                self.p3.setText('종료')
     
     def error_report(self,f):
         self.err_sig.on(f)
@@ -233,12 +246,6 @@ class mainWindow(QMainWindow,form_class1) :
         p = errPopDialog()
         p.exec_()
         
-        """
-        qmb =QMessageBox()
-        result = qmb.warning(self,'Error','error occurs in step %s' %mesg,QMessageBox.Ok)
-        if result == QMessageBox.Ok :
-            RVM_status.error_stat=retValOK
-        """
 
     def end_report(self):
         self.end_sig.on()
@@ -258,7 +265,7 @@ class errPopDialog(QDialog,form_class3):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.label_err_mesg.setText('Error occurs in\nStep %s' %RVM_status.exec_stat)
+        self.num.setText('에러 발생 \nStep %s' %RVM_status.exec_stat)
         self.pushButton.clicked.connect(self.errorOk)
 
     def errorOk(self):
@@ -272,8 +279,10 @@ class endPopDialog(QDialog,form_class4):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.can_num.setText('can : %s개' %RVM_status.recycling_number['can'])
-        self.pet_num.setText('pet : %s개' %RVM_status.recycling_number['pet'])
+        self.p = RVM_status.recycling_number['pet']
+        self.c = RVM_status.recycling_number['can']
+        self.t = self.p + self.c
+        self.num.setText('결과 알려드림\n페트병 %d개, 캔 %d개\n총 %d개 들어왔음' %(self.p, self.c, self.t))
         self.pushButton.clicked.connect(self.endOk)
 
     def endOk(self):
@@ -323,8 +332,6 @@ def main_Cycle():
 
         #0 machine stat check
         if RVM_status.machine_stat != RVM_STATE_ON:
-            printB('start 버튼을 눌러주세요')
-            printU('')
             time.sleep(0.1)
         else :
             #1 Check IR sensor
@@ -373,9 +380,7 @@ def errorExit():
 #IR sensor
 def checkObjectCond():
     RVM_status.exec_stat = EXEC_IRSENCOR_TYPE
-    printB('쓰레기를 넣어 주세요')
-    printU("#1 : check object condition")
-
+    
     if debug:
         time.sleep(2)
     else:
@@ -388,11 +393,14 @@ def checkObjectCond():
 
             time.sleep(0.1)
 
+    printB('쓰레기를 처리중 입니다')
+    printU("#1 : check object condition")
+
     return retValOK
 
 def checkLoadCell():
     RVM_status.exec_stat = EXEC_LOADCELL_TYPE
-    printB('쓰레기 처리중 입니다')
+    printB('쓰레기를 처리중 입니다')
     printU('#2 : check object weight')
     
     if debug:
