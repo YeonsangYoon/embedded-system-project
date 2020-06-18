@@ -66,10 +66,10 @@ retValOK = 1
 Error = -1
 
 # Rasp GPIO Pin
-IR_Pin1 = 3         # Boad(5)
-IR_Pin2 = 4         # Boad(7)
-IR_Pin3 = 17        # Boad(11)
-IR_Pin4 = 27        # Boad(13)
+IR_Pin1 = 6         # Boad(5)
+IR_Pin2 = 13         # Boad(7)
+IR_Pin3 = 19        # Boad(11)
+IR_Pin4 = 26        # Boad(13)
 
 LC_DT_Pin = 23      # Boad(16)
 LC_SCK_Pin = 24     # Boad(18)
@@ -412,10 +412,10 @@ def checkLoadCell():
         for i in range(20):
             weights.append(hx711._read())
 
-            if False in weigths:
+            if False in weights:
                 weights.remove(False)
             
-        weigths.remove(max(weights))
+        weights.remove(max(weights))
         weights.remove(min(weights))
 
         avg = sum(weights) / len(weights)
