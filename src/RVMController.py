@@ -132,10 +132,10 @@ class RVM_Stat:
 # user interface class
 # UI파일 연결
 # 단, UI파일은 Python 코드 파일과 같은 디렉토리에 위치해야한다.
-form_class1 = uic.loadUiType("new1.ui")[0]
-form_class2 = uic.loadUiType("phoneNumber.ui")[0]
-form_class3 = uic.loadUiType("newpop2.ui")[0]
-form_class4 = uic.loadUiType("newpop1.ui")[0]
+form_class1 = uic.loadUiType("ui/new1.ui")[0]
+form_class2 = uic.loadUiType("ui/phoneNumber.ui")[0]
+form_class3 = uic.loadUiType("ui/newpop2.ui")[0]
+form_class4 = uic.loadUiType("ui/newpop1.ui")[0]
 
 
 
