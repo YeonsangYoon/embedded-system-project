@@ -420,7 +420,7 @@ def checkLoadCell():
 
         avg = sum(weights) / len(weights)
 
-        if avg < -200000 or avg > -100000:
+        if avg < init_avg+20000 or avg > init_avg-80000:
             return Error
         else:
             return retValOK
@@ -528,10 +528,25 @@ if not debug:
     port = '/dev/ttyACM0'                           
     ser = serial.Serial(port, 9600, timeout = 2)
 
+
     # Load Cell GPIO setting
     GPIO.setwarnings(False)
     hx711 = HX711(LC_DT_Pin, LC_SCK_Pin)
     hx711.reset()
+
+    w = []
+        
+    for i in range(20):
+        w.append(hx711._read())
+
+        if False in weights:
+            w.remove(False)
+        
+    w.remove(max(w))
+    w.remove(min(w))
+
+    init_avg = sum(w) / len(w)
+
 
     # IR Sensor GPIO setting
     GPIO.setup(IR_Pin1,GPIO.IN)
