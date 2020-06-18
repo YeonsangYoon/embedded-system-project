@@ -349,6 +349,7 @@ def main_Cycle():
             #4 Request discrimination
             else :
                 resultD = requestD()
+                print(resultD)
 
                 #5 rail move command 
                 if moveCommand(resultD)<0:
@@ -380,7 +381,7 @@ def errorExit():
 #IR sensor
 def checkObjectCond():
     RVM_status.exec_stat = EXEC_IRSENCOR_TYPE
-    
+
     if debug:
         time.sleep(2)
     else:
@@ -402,7 +403,7 @@ def checkLoadCell():
     RVM_status.exec_stat = EXEC_LOADCELL_TYPE
     printB('쓰레기를 처리중 입니다')
     printU('#2 : check object weight')
-    
+
     if debug:
         time.sleep(2)
         return retValOK
@@ -420,10 +421,10 @@ def checkLoadCell():
 
         avg = sum(weights) / len(weights)
 
-        if avg < init_avg+20000 or avg > init_avg-80000:
-            return Error
-        else:
+        if avg < init_avg+20000 and avg > init_avg-80000:
             return retValOK
+        else:
+            return Error
 
 def moveCommand(destination):
     if destination == 'Dzone':
@@ -434,14 +435,16 @@ def moveCommand(destination):
             time.sleep(1)
             return retValOK
         else:
+            #ser.flush()
             ser.write('1'.encode())
-            
-            ret = ser.readline()
-
-            if ret.decode() == 'y':
-                return retValOK
-            else:
-                return Error
+            #ser.flush()
+            while(ser.readable()):
+                ret = ser.read()
+                print(ret)
+                if ret.decode() == 'y':
+                    return retValOK
+                #else:
+                    #return Error
 
     elif destination == 'pet':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
@@ -451,16 +454,18 @@ def moveCommand(destination):
             time.sleep(1)
             return retValOK
         else:
-            ser.writelines('2'.encode())
+            #ser.flush()
 
-            ret = ser.readline()
+            ser.write('5'.encode())
 
-            if ret.decode() == 'y':
-                return retValOK
-            else:
-                return Error
+            while(ser.readable()):
 
-        return retValOK
+                ret = ser.read()
+                print(ret)
+                if ret.decode() == 'y':
+                    return retValOK
+                #else:
+                    #return Error
 
     elif destination == 'can':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
@@ -470,16 +475,14 @@ def moveCommand(destination):
             time.sleep(1)
             return retValOK
         else:
-            ser.writelines('3')
-
-            ret = ser.readline()
-
-            if ret.decode() == 'y':
-                return retValOK
-            else:
-                return Error
-
-        return retValOK
+            ser.write('3'.encode())
+            
+            
+            while(ser.readable()):
+                ret = ser.read()
+                print(ret)
+                if ret.decode() == 'y':
+                    return retValOK
 
     elif destination == 'return':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
@@ -489,14 +492,14 @@ def moveCommand(destination):
             time.sleep(1)
             return retValOK
         else:
-            ser.writelines('4')
-
-            ret = ser.readline()
-
-            if ret.decode() == 'y':
-                return retValOK
-            else:
-                return Error
+            ser.write('4'.encode())
+            
+            
+            while(ser.readable()):
+                ret = ser.read()
+                print(ret)
+                if ret.decode() == 'y':
+                    return retValOK
 
     else:
         return Error
@@ -505,9 +508,11 @@ def requestD():
     RVM_status.exec_stat = EXEC_IMAGEPROCESS_TYPE
     printU("#4 : discriminating image")
 
+    #time.sleep(5)    
+    
     #linux
     try:
-        response = requests.post("http://0.0.0.0:5000/requestd")
+        response = requests.post("http://10.0.0.0:5001/requestd")
     except:
         return errorExit()
     
@@ -526,7 +531,7 @@ RVM_status = RVM_Stat()
 if not debug:
     # USB serial interface
     port = '/dev/ttyACM0'                           
-    ser = serial.Serial(port, 9600, timeout = 2)
+    ser = serial.Serial(port, 9600, timeout = 4)
 
 
     # Load Cell GPIO setting
@@ -539,7 +544,7 @@ if not debug:
     for i in range(20):
         w.append(hx711._read())
 
-        if False in weights:
+        if False in w:
             w.remove(False)
         
     w.remove(max(w))
