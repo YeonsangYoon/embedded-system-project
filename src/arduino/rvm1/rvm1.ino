@@ -76,69 +76,75 @@ void setup() {
 void loop()
 {
 /*
-  	Serial.print("M2_en : ");
-  	Serial.print(M2_duration);
-  	Serial.print("\tM3_en : ");
-  	Serial.println(M3_duration);
-  	delay(100);
+    Serial.print("M2_en : ");
+    Serial.print(M2_duration);
+    Serial.print("\tM3_en : ");
+    Serial.println(M3_duration);
+    delay(100);
 */
-  	if(Serial.available() > 0)
-  	{
-  	 	// Serial.print("M2_en : ");
-  	  	// Serial.println(M2_duration);
-  	  	in_data = Serial.read();
-  	/*
-  	  	Serial.print("in_data : ");
-  	  	Serial.println(in_data);
+    if(Serial.available() > 0)
+    {
+      // Serial.print("M2_en : ");
+        // Serial.println(M2_duration);
+        in_data = Serial.read();
+    /*
+        Serial.print("in_data : ");
+        Serial.println(in_data);
 
-  	  	delay(50);
-	*/
-    	switch(in_data)
-    	{
-		
-    	  	case '1' :  // Dzone
-    	  		stepM(stepsPerRevolution*-1.3);
-    	  		M1_CW(255,1500);
-    	  		Serial.write('y');
-				stepM(stepsPerRevolution*1.3);
-				M2_duration = 0;
-    	  		M3_duration = 0;
-    	  		Flush();
-    	  		break;
-		
-    	  	case '2' : // pet   
-    	  		M3_CW(900);
-    	  		M1_CW(255,800);
-    	  		M3_CCW(900);
-    	  		Serial.write('y');
-    	  		Flush();
-    	  		break;
-	
-    	  	case '3' :  // can
-    	  		M2_CW(5500,250);
-    	  		M2_CCW(5500,250);
-    	  		Serial.write('y');
-    	  		Flush();
-    	  		break;
-	
-    	  	case '4':  // return
-    	  		M1_CCW(255,2500);
-    	  		Serial.write('y');
-    	  		Flush();
-    	  		break;
-		
-    	  	default :
-    	  		Serial.write('E');
-    	  		Flush();
-    	  		break;
-    	}
+        delay(50);
+  */
+      switch(in_data)
+      {
+    
+          case '1' :  // Dzone
+            M2_duration = 0;
+            M3_duration = 0;
+            stepM(stepsPerRevolution*-1.3);
+            M1_CW(255,1500);
+            Serial.write('y');
+            stepM(stepsPerRevolution*1.3);
+            Flush();
+            break;
+    
+          case '2' : // pet 
+            M2_duration = 0;
+            M3_duration = 0;  
+            M3_CW(900);
+            M1_CW(255,800);
+            M3_CCW(900);
+            Serial.write('y');
+            Flush();
+            break;
+  
+          case '3' :  // can
+            M2_duration = 0;
+            M3_duration = 0;
+            M2_CW(5500,250);
+            M2_CCW(5500,250);
+            Serial.write('y');
+            Flush();
+            break;
+  
+          case '4':  // return
+            M2_duration = 0;
+            M3_duration = 0;
+            M1_CCW(255,2500);
+            Serial.write('y');
+            Flush();
+            break;
+    
+          default :
+            Serial.write('E');
+            Flush();
+            break;
+      }
   }
 }
 
 void Flush()    //남은 incoming 버퍼 지우기
 {
-  	while(Serial.available() > 0)
-  	{
-  	  	Serial.read();
-  	}
+    while(Serial.available() > 0)
+    {
+        Serial.read();
+    }
 }
