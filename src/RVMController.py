@@ -338,36 +338,37 @@ def main_Cycle():
             if checkObjectCond() < 0:
                 errorExit()
 
-            #2 Check Load cell 
-            elif checkLoadCell() < 0:
-                errorExit()
-
-            #3 rail move command 
-            elif moveCommand('Dzone') < 0:
-                errorExit()
-
-            #4 Request discrimination
-            else :
-                resultD = requestD()
-                print(resultD)
-
-                #5 rail move command 
-                if moveCommand(resultD)<0:
+            else:
+                #2 Check Load cell 
+                if checkLoadCell() < 0:
                     errorExit()
 
-            if RVM_status.error_stat == retValOK:
-                # Update Status
-                RVM_status.updateStatus(resultD)
-                main_window.can_pet()
-                main_window.button_text()
+                #3 rail move command 
+                elif moveCommand('Dzone') < 0:
+                    errorExit()
 
-            elif RVM_status.error_stat == Error :
-                #debug msg
-                while RVM_status.error_stat == Error :
-                    continue
-                
-                printU("Error fixed.. restart")
-                main_window.button_text()
+                #4 Request discrimination
+                else :
+                    resultD = requestD()
+                    print(resultD)
+
+                    #5 rail move command 
+                    if moveCommand(resultD)<0:
+                        errorExit()
+
+                if RVM_status.error_stat == retValOK:
+                    # Update Status
+                    RVM_status.updateStatus(resultD)
+                    main_window.can_pet()
+                    main_window.button_text()
+
+                elif RVM_status.error_stat == Error :
+                    #debug msg
+                    while RVM_status.error_stat == Error :
+                        continue
+
+                    printU("Error fixed.. restart")
+                    main_window.button_text()
 
                 
 
@@ -389,9 +390,10 @@ def checkObjectCond():
         while GPIO.input(IR_Pin1) and \
             GPIO.input(IR_Pin2) and \
             GPIO.input(IR_Pin3) and \
-            GPIO.input(IR_Pin4) and \
-            RVM_status.machine_stat:
+            GPIO.input(IR_Pin4):
 
+            if RVM_status.machine_stat == RVM_STATE_OFF:
+                return Error
             time.sleep(0.1)
 
     printB('쓰레기를 처리중 입니다')
@@ -408,25 +410,31 @@ def checkLoadCell():
         time.sleep(2)
         return retValOK
     else:
-        weights = []
-        
-        for i in range(20):
-            weights.append(hx711._read())
+        while 1:
+            weights = []
 
-            if False in weights:
-                weights.remove(False)
-            
-        weights.remove(max(weights))
-        weights.remove(min(weights))
+            for i in range(20):
+                weights.append(hx711._read())
 
-        avg = sum(weights) / len(weights)
+                if False in weights:
+                    weights.remove(False)
 
-        if avg < init_avg+20000 and avg > init_avg-80000:
-            return retValOK
-        else:
-            return Error
+            weights.remove(max(weights))
+            weights.remove(min(weights))
+
+            avg = sum(weights) / len(weights)
+
+            if avg < init_avg-3000 and avg > init_avg-80000:
+                printB('쓰레기를 처리중 입니다')
+                return retValOK
+            else:
+                printB('쓰레기의 무게가 초과되었습니다.')
+
+            time.sleep(0.5)
 
 def moveCommand(destination):
+    count = 0
+
     if destination == 'Dzone':
         RVM_status.exec_stat = EXEC_RAIL_TYPE
         printU("#3 : moving to discriminating zone")
@@ -435,16 +443,17 @@ def moveCommand(destination):
             time.sleep(1)
             return retValOK
         else:
-            #ser.flush()
             ser.write('1'.encode())
-            #ser.flush()
             while(ser.readable()):
                 ret = ser.read()
                 print(ret)
                 if ret.decode() == 'y':
                     return retValOK
-                #else:
-                    #return Error
+                elif count > 10:
+                    return Error
+                else:
+                    count += 1
+                    
 
     elif destination == 'pet':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
@@ -454,9 +463,7 @@ def moveCommand(destination):
             time.sleep(1)
             return retValOK
         else:
-            #ser.flush()
-
-            ser.write('5'.encode())
+            ser.write('2'.encode())
 
             while(ser.readable()):
 
@@ -464,8 +471,10 @@ def moveCommand(destination):
                 print(ret)
                 if ret.decode() == 'y':
                     return retValOK
-                #else:
-                    #return Error
+                elif count > 10:
+                    return Error
+                else:
+                    count += 1
 
     elif destination == 'can':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
@@ -483,7 +492,10 @@ def moveCommand(destination):
                 print(ret)
                 if ret.decode() == 'y':
                     return retValOK
-
+                elif count > 10:
+                    return Error
+                else:
+                    count += 1
     elif destination == 'return':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
         printU("#5 : moving to entrance")
@@ -500,19 +512,20 @@ def moveCommand(destination):
                 print(ret)
                 if ret.decode() == 'y':
                     return retValOK
-
+                elif count > 10:
+                    return Error
+                else:
+                    count += 1
     else:
         return Error
 
 def requestD():
     RVM_status.exec_stat = EXEC_IMAGEPROCESS_TYPE
-    printU("#4 : discriminating image")
-
-    #time.sleep(5)    
+    printU("#4 : discriminating image")   
     
     #linux
     try:
-        response = requests.post("http://10.0.0.0:5001/requestd")
+        response = requests.post("http://10.0.0.0:5000/requestd")
     except:
         return errorExit()
     
@@ -531,7 +544,7 @@ RVM_status = RVM_Stat()
 if not debug:
     # USB serial interface
     port = '/dev/ttyACM0'                           
-    ser = serial.Serial(port, 9600, timeout = 4)
+    ser = serial.Serial(port, 9600, timeout = 2)
 
 
     # Load Cell GPIO setting
@@ -549,7 +562,6 @@ if not debug:
         
     w.remove(max(w))
     w.remove(min(w))
-
     init_avg = sum(w) / len(w)
 
 
