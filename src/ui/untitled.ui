@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1024</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QWidget" name="widget" native="true">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1024</width>
+     <height>600</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>굴림</family>
+    </font>
+   </property>
+   <property name="focusPolicy">
+    <enum>Qt::WheelFocus</enum>
+   </property>
+   <property name="contextMenuPolicy">
+    <enum>Qt::DefaultContextMenu</enum>
+   </property>
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <widget class="QLabel" name="label_intro">
+    <property name="geometry">
+     <rect>
+      <x>162</x>
+      <y>30</y>
+      <width>700</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>32</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>쓰레기를 넣어 주세요</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>311</x>
+      <y>200</y>
+      <width>100</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>32</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>캔</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>582</x>
+      <y>200</y>
+      <width>100</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>32</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>페트</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_can_num">
+    <property name="geometry">
+     <rect>
+      <x>311</x>
+      <y>320</y>
+      <width>140</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>32</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>0개</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_pet_num">
+    <property name="geometry">
+     <rect>
+      <x>582</x>
+      <y>320</y>
+      <width>140</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>32</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>0개</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_10">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>200</y>
+      <width>161</width>
+      <height>260</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>24</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>image_c</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_17">
+    <property name="geometry">
+     <rect>
+      <x>782</x>
+      <y>150</y>
+      <width>161</width>
+      <height>305</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>24</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>image_p</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pbtn_start">
+    <property name="geometry">
+     <rect>
+      <x>312</x>
+      <y>450</y>
+      <width>400</width>
+      <height>100</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>굴림</family>
+      <pointsize>36</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>start</string>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>16</width>
+      <height>16</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_intro_2">
+    <property name="geometry">
+     <rect>
+      <x>162</x>
+      <y>70</y>
+      <width>700</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>24</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

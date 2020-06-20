@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>588</width>
+    <height>430</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
+  <widget class="QWidget" name="widget" native="true">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>588</width>
+     <height>430</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">gridline-color: rgb(0, 0, 0);
+background-image: url(:/newPrefix/img/pic5.png);
+
+border:4px solid black;
+border-color:rgb(209,254,225);</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="num">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>20</y>
+     <width>483</width>
+     <height>250</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>12롯데마트행복Bold</family>
+     <pointsize>41</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">color: rgb(0, 176, 80);</string>
+   </property>
+   <property name="lineWidth">
+    <number>0</number>
+   </property>
+   <property name="midLineWidth">
+    <number>0</number>
+   </property>
+   <property name="text">
+    <string>에러 발생
+ Step 4</string>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::PlainText</enum>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>202</x>
+     <y>320</y>
+     <width>183</width>
+     <height>79</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>12롯데마트행복Bold</family>
+     <pointsize>41</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">background-color: rgba(0, 0, 0, 120);
+border:4px solid black;
+border-radius:10px;
+color:white
+</string>
+   </property>
+   <property name="text">
+    <string>확 인</string>
+   </property>
+  </widget>
+ </widget>
+ <resources>
+  <include location="bg.qrc"/>
+ </resources>
+ <connections/>
+</ui>
