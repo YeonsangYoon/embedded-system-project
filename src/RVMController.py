@@ -118,6 +118,7 @@ class RVM_Stat:
             self.recycling_number['pet'] = 0
         else:
             self.exec_stat = EXEC_NONE_TYPE
+            time.sleep(2)
 
 
 
@@ -178,7 +179,10 @@ class mainWindow(QMainWindow,form_class1) :
         self.fontDB.addApplicationFont(":/font/font/12롯데마트드림Bold.ttf")
         self.fontDB.addApplicationFont(":/font/font/12롯데마트행복Bold.ttf")
         self.setupUi(self)
+        self.p2_1.setStyleSheet('color:black')
+        self.p2_2.setStyleSheet('color:black')
         self.title = '<html><head/><body><p align="center" style = "vertical-align:middle"><span style=" font-size:120pt; ">RVM</span><span style=" font-size:24pt; color:#000000;">(일사분란착착착)</span></p></body></html>'
+       
         self.p3.clicked.connect(self.button_start)
         self.p2.setStyleSheet('background-image:url(":/newPrefix/img/pic2.png")')
         self.err_sig = error_sig()
@@ -202,6 +206,8 @@ class mainWindow(QMainWindow,form_class1) :
             self.p1.setText('<html><head/><body><p align="center"><span style=" font-size:47pt; color:#000000;">%s</span></p><p align="center"><span style=" font-size:30pt; color:#000000;">%s</span></p></body></html>' %(self.m1,self.m2))
         elif m == 'title' :
             self.p1.setText(self.title)
+        elif m == 'ready':
+            self.p1.setText('페트병 혹은 캔을\n하나씩 넣어주세요')
     def can_pet(self) :
         self.p2_1.setText(str(RVM_status.recycling_number['pet'])+' 개')
         self.p2_2.setText(str(RVM_status.recycling_number['can'])+' 개')
@@ -226,12 +232,12 @@ class mainWindow(QMainWindow,form_class1) :
             else :
                 self.mes_sig.on('title')
                 self.p2.setStyleSheet('background-image:url(":/newPrefix/img/pic2.png")')
-                self.p2_1.setText('')
                 self.p2_2.setText('')
+                self.p2_1.setText('')
                 self.p3.setText('시작')
         elif RVM_status.machine_stat == RVM_STATE_ON:
-            if RVM_status.exec_stat == EXEC_NONE_TYPE:
-                self.p1.setText('페트병 혹은 캔을\n하나씩 넣어주세요')
+            if RVM_status.exec_stat <= EXEC_IRSENCOR_TYPE:
+                self.mes_sig.on('ready')
                 self.p2.setStyleSheet('background-image:url(":/newPrefix/img/pic4.png")')
                 self.can_pet()
                 self.p3.setText('종료')
@@ -336,39 +342,41 @@ def main_Cycle():
         else :
             #1 Check IR sensor
             if checkObjectCond() < 0:
+                if RVM_status.machine_stat == RVM_STATE_OFF :
+                    resultD = 0;
+                else : 
+                    errorExit()
+
+            #2 Check Load cell 
+            elif checkLoadCell() < 0:
                 errorExit()
 
-            else:
-                #2 Check Load cell 
-                if checkLoadCell() < 0:
+            #3 rail move command 
+            elif moveCommand('Dzone') < 0:
+                errorExit()
+
+            #4 Request discrimination
+            else :
+                resultD = requestD()
+                print(resultD)
+
+                #5 rail move command 
+                if moveCommand(resultD)<0:
                     errorExit()
 
-                #3 rail move command 
-                elif moveCommand('Dzone') < 0:
-                    errorExit()
+            if RVM_status.error_stat == retValOK:
+                # Update Status
+                RVM_status.updateStatus(resultD)
+                main_window.can_pet()
+                main_window.button_text()
 
-                #4 Request discrimination
-                else :
-                    resultD = requestD()
-                    print(resultD)
+            elif RVM_status.error_stat == Error :
+                #debug msg
+                while RVM_status.error_stat == Error :
+                    continue
 
-                    #5 rail move command 
-                    if moveCommand(resultD)<0:
-                        errorExit()
-
-                if RVM_status.error_stat == retValOK:
-                    # Update Status
-                    RVM_status.updateStatus(resultD)
-                    main_window.can_pet()
-                    main_window.button_text()
-
-                elif RVM_status.error_stat == Error :
-                    #debug msg
-                    while RVM_status.error_stat == Error :
-                        continue
-
-                    printU("Error fixed.. restart")
-                    main_window.button_text()
+                printU("Error fixed.. restart")
+                main_window.button_text()
 
                 
 

@@ -42,7 +42,8 @@
 font: 47pt &quot;12롯데마트드림Bold&quot;;
 gridline-color: rgb(0, 0, 0);
 border:4px solid black;
-border-color:rgb(209,254,225);</string>
+border-color:rgb(209,254,225);
+color:black;</string>
    </property>
    <property name="lineWidth">
     <number>-2</number>
@@ -92,7 +93,8 @@ border-color:rgb(209,254,225);</string>
     <string notr="true">background-image: url(:/newPrefix/img/pic4.png);
 gridline-color: rgb(0, 0, 0);
 border:4px solid black;
-border-color:rgb(209,254,225);</string>
+border-color:rgb(209,254,225);
+color:black;</string>
    </property>
    <property name="lineWidth">
     <number>-2</number>
@@ -199,7 +201,8 @@ border-color:rgb(209,254,225);</string>
 font: 83pt &quot;12롯데마트드림Bold&quot;;
 gridline-color: rgb(0, 0, 0);
 border:4px solid black;
-border-color:rgb(209,254,225);</string>
+border-color:rgb(209,254,225);
+color:black;</string>
    </property>
    <property name="text">
     <string>시작</string>
