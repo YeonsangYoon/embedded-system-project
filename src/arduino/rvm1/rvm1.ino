@@ -100,17 +100,19 @@ void loop()
             M2_duration = 0;
             M3_duration = 0;
             stepM(stepsPerRevolution*-1.3);
-            M1_CW(255,1500);
+            M1_CW(225,1500);
             Serial.write('y');
             stepM(stepsPerRevolution*1.3);
             Flush();
             break;
     
-          case '2' : // pet 
+          case '2' : // pet
             M2_duration = 0;
-            M3_duration = 0;  
+            M3_duration = 0;
             M3_CW(900);
-            M1_CW(255,800);
+            M2_duration = 0;
+            M3_duration = 0;
+            M1_CW(220,800);
             M3_CCW(900);
             Serial.write('y');
             Flush();
@@ -120,7 +122,10 @@ void loop()
             M2_duration = 0;
             M3_duration = 0;
             M2_CW(5500,250);
-            M2_CCW(5500,250);
+            delay(100);
+            M2_duration = 0;
+            M3_duration = 0;
+            M2_CCW(5400,250);
             Serial.write('y');
             Flush();
             break;

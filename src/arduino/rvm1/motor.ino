@@ -63,7 +63,7 @@ void M2_CW(int a, int b) {
         if(temp==temp1)
         {
           count++;
-          if(count>2000)
+          if(count>150)
               break;
         }
         else
@@ -105,7 +105,7 @@ void M2_CCW(int a, int b)
         if(temp==temp1)
         {
             count++;
-            if(count>00)
+            if(count>150)
                 break;
         }
         else

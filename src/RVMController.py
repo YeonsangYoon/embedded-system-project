@@ -405,14 +405,14 @@ def checkObjectCond():
             time.sleep(0.1)
 
     printB('쓰레기를 처리중 입니다')
-    printU("#1 : check object condition")
+    printU("#1 : 적외선 센서 탐지 중")
 
     return retValOK
 
 def checkLoadCell():
     RVM_status.exec_stat = EXEC_LOADCELL_TYPE
     printB('쓰레기를 처리중 입니다')
-    printU('#2 : check object weight')
+    printU('#2 : 물체 무게 측정 중')
 
     if debug:
         time.sleep(2)
@@ -445,7 +445,7 @@ def moveCommand(destination):
 
     if destination == 'Dzone':
         RVM_status.exec_stat = EXEC_RAIL_TYPE
-        printU("#3 : moving to discriminating zone")
+        printU("#3 : 판별부까지 이동 중")
 
         if debug:
             time.sleep(1)
@@ -465,7 +465,7 @@ def moveCommand(destination):
 
     elif destination == 'pet':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        printU("#5 : moving to pet zone")
+        printU("#5 : 페트병 분류 중")
 
         if debug:
             time.sleep(1)
@@ -486,7 +486,7 @@ def moveCommand(destination):
 
     elif destination == 'can':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        printU("#5 : moving to can zone")
+        printU("#5 : 캔 분류 중")
 
         if debug:
             time.sleep(1)
@@ -506,7 +506,7 @@ def moveCommand(destination):
                     count += 1
     elif destination == 'return':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        printU("#5 : moving to entrance")
+        printU("#5 : 물체 반송 중")
 
         if debug:
             time.sleep(1)
@@ -529,7 +529,7 @@ def moveCommand(destination):
 
 def requestD():
     RVM_status.exec_stat = EXEC_IMAGEPROCESS_TYPE
-    printU("#4 : discriminating image")   
+    printU("#4 : 물체 판별 중")   
     
     #linux
     try:
