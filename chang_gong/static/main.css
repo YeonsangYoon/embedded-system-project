@@ -1,0 +1,131 @@
+@font-face {
+    font-family: 'BMJUA';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/BMJUA.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body {
+    max-width: 1334px;
+    min-height: 728px;
+    font-family: 'BMJUA';
+}
+
+.bg2 {
+    background : url('img/bg2.png') no-repeat;
+}
+
+
+#logo_frame{
+    background : url('img/test.png'); 
+    width: 1046px;
+    height: 96px;
+    position: absolute;
+    left:144px;
+    top: 22px;
+}
+
+#message_frame{
+    background : url('img/test.png');
+    width: 824px;
+    height: 405px;
+    position: absolute;
+    left:111px;
+    top: 173px;
+}
+
+#count_frame{
+    background : url('img/count.png') no-repeat;
+    width: 240px;
+    height: 405px;
+    position: absolute;
+    left:984px;
+    top: 173px;
+}
+
+#count_can_frame{
+    position: absolute;
+    right: 70px;
+    top: 97px;
+    font-size: 52px;
+    color: #2b9fb8;
+}
+
+#count_pet_frame{
+    position: absolute;
+    right: 70px;
+    top: 300px;
+    font-size: 52px;
+    color: #2b9fb8;
+}
+
+
+#photo_frame {
+    width: 640px;
+    height: 360px;
+    position: absolute;
+    top: 20px;
+    left: 90px;
+}
+
+#start_button {
+    width:256px;
+    height:84px;
+    background : url('img/start.png') no-repeat;
+    position: absolute;
+    top: 400px;
+    left: 0px;
+}
+
+#end_button {
+    width:256px;
+    height:84px;
+    background : url('img/end.png') no-repeat;
+    position: absolute;
+    top: 400px;
+    left: 300px;
+}
+
+#can_button {
+    width:256px;
+    height:84px;
+    background : url('img/can.png') no-repeat;
+    position: absolute;
+    top: 400px;
+    left: 600px;
+}
+
+#pet_button {
+    width:256px;
+    height:84px;
+    background : url('img/pet.png') no-repeat;
+    position: absolute;
+    top: 400px;
+    left: 900px;
+}
+
+#force_yes_button {
+    width:256px;
+    height:84px;
+    background : url('img/yes.png') no-repeat;
+    position: absolute;
+    top: 300px;
+    left: 0px;
+}
+
+#force_no_button {
+    width:256px;
+    height:84px;
+    background : url('img/no.png') no-repeat;
+    position: absolute;
+    top: 300px;
+    left: 300px;
+}
+
+.button {
+    min-width: 100px;
+    min-height: 100px;
+    border-width: 2px ;
+    border-color: black;
+    border-style: solid;
+}
