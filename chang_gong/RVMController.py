@@ -296,41 +296,28 @@ def checkForceContinue():
 
 def dummyLinearCheck():
     sendMesg('리니어모터')
-    time.sleep(2)
+    if debug:
+        time.sleep(1)
+    else:
+        moveCommand('linear')
     return 1
 
 def dummyDCCheck():
     sendMesg('DC모터')
-    time.sleep(2)
+    if debug:
+        time.sleep(1)
+    elif RVM_status.user_select == 'pet':
+        moveCommand('pet')
+    elif RVM_status.user_select == 'can':
+        moveCommand('can')
+    else:
+        return Error
+
     return 1
 
 def dummyElseCheck():
     return 1
 
-
-#IR sensor
-def checkObjectCond():
-    RVM_status.exec_stat = EXEC_IRSENCOR_TYPE
-
-    if debug:
-        time.sleep(2)
-    else:
-        # End cycle by pressing the End button before placing the object
-        while GPIO.input(IR_Pin1) and \
-            GPIO.input(IR_Pin2) and \
-            GPIO.input(IR_Pin3) and \
-            GPIO.input(IR_Pin4):
-
-            if RVM_status.machine_stat == RVM_STATE_OFF:
-                return Error
-            time.sleep(0.1)
-
-    #printB('쓰레기를 처리중 입니다')
-    #printU("#1 : check object condition")
-    sendMesg('쓰레기를 처리중 입니다')
-    
-
-    return retValOK
 
 def checkLoadCell():
     RVM_status.exec_stat = EXEC_LOADCELL_TYPE
@@ -345,38 +332,20 @@ def checkLoadCell():
             return -1
         return retValOK
     else:
-        while 1:
-
-            #if RVM_status.user_select == '' :
-            #    return -1
-
-            weights = []
-
-            for i in range(20):
-                weights.append(hx711._read())
-
-                if False in weights:
-                    weights.remove(False)
-
-            weights.remove(max(weights))
-            weights.remove(min(weights))
-
-            avg = sum(weights) / len(weights)
-
-            if avg < init_avg-3000 and avg > init_avg-80000:
-                #printB('쓰레기를 처리중 입니다')
+        ser.write('4'.encode())
+        while(ser.readable()):
+            ret = ser.read()
+            if ret.decode() == 'y':
                 return retValOK
+            elif count > 10:
+                return Error
             else:
-                pass
-                #printB('쓰레기의 무게가 초과되었습니다.')
-                #sendMesg('무게초과')
-
-            time.sleep(0.5)
+                count += 1
 
 def moveCommand(destination):
     count = 0
 
-    if destination == 'Dzone':
+    if destination == 'linear':
         RVM_status.exec_stat = EXEC_RAIL_TYPE
         #printU("#3 : moving to discriminating zone")
         sendMesg('moving to discriminating zone')
@@ -385,7 +354,7 @@ def moveCommand(destination):
             time.sleep(1)
             return retValOK
         else:
-            ser.write('1'.encode())
+            ser.write('3'.encode())
             while(ser.readable()):
                 ret = ser.read()
                 print(ret)
@@ -399,14 +368,13 @@ def moveCommand(destination):
 
     elif destination == 'pet':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        #printU("#5 : moving to pet zone")
         sendMesg('#5 : moving to pet zone')
 
         if debug:
             time.sleep(1)
             return retValOK
         else:
-            ser.write('2'.encode())
+            ser.write('1'.encode())
 
             while(ser.readable()):
 
@@ -421,35 +389,12 @@ def moveCommand(destination):
 
     elif destination == 'can':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        #printU("#5 : moving to can zone")
         sendMesg('#5 : moving to can zone')
         if debug:
             time.sleep(1)
             return retValOK
         else:
-            ser.write('3'.encode())
-            
-            
-            while(ser.readable()):
-                ret = ser.read()
-                print(ret)
-                if ret.decode() == 'y':
-                    return retValOK
-                elif count > 10:
-                    return Error
-                else:
-                    count += 1
-    elif destination == 'return':
-        RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        #printU("#5 : moving to entrance")
-
-
-        if debug:
-            time.sleep(1)
-            return retValOK
-        else:
-            ser.write('4'.encode())
-            
+            ser.write('2'.encode())
             
             while(ser.readable()):
                 ret = ser.read()
@@ -463,23 +408,6 @@ def moveCommand(destination):
     else:
         return Error
 
-def requestD():
-    RVM_status.exec_stat = EXEC_IMAGEPROCESS_TYPE
-    #printU("#4 : discriminating image")   
-    sendMesg("#4 : discriminating image")
-    
-
-    #linux
-    try:
-        response = requests.post("http://10.0.0.0:5000/requestd")
-    except:
-        return errorExit()
-    
-    # window(debug)
-    # response = requests.post("http://localhost:5000/requestd")
-
-    return response.text
-
 ####################################################################################
 #                                   main sequence                                  #
 ####################################################################################
@@ -489,39 +417,8 @@ RVM_status = RVM_Stat()
 
 if not debug:
     # USB serial interface
-    port = '/dev/ttyACM0'                           
+    port = '/dev/ttyUSB0'                           
     ser = serial.Serial(port, 9600, timeout = 2)
-
-
-    # Load Cell GPIO setting
-    GPIO.setwarnings(False)
-    hx711 = HX711(LC_DT_Pin, LC_SCK_Pin)
-    hx711.reset()
-
-    w = []
-        
-    for i in range(20):
-        w.append(hx711._read())
-
-        if False in w:
-            w.remove(False)
-        
-    w.remove(max(w))
-    w.remove(min(w))
-    init_avg = sum(w) / len(w)
-
-
-    # IR Sensor GPIO setting
-    GPIO.setup(IR_Pin1,GPIO.IN)
-    GPIO.setup(IR_Pin2,GPIO.IN)
-    GPIO.setup(IR_Pin3,GPIO.IN)
-    GPIO.setup(IR_Pin4,GPIO.IN)
-
-# 유저 인터페이스 init
-#app = QApplication(sys.argv) 
-#phone_window = phoneWindow() 
-#ain_window = mainWindow()
-#main_window.showFullScreen()
 
 # main Cycle init
 t = threading.Thread(target=socketStart)
