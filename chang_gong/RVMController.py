@@ -64,6 +64,8 @@ args = parser.parse_args()
 debug = args.debug
 
 if debug == False:
+    import serial
+    import subprocess
     import cv2
     import torch
     from torchvision import transforms, models
@@ -199,7 +201,13 @@ def main_Cycle():
                         #7 - 2 - 1. 리니어 모터 동작
                         #8 - 2 - 1. DC 모터 동작
                         #9 - 2 - 1. 상태 업데이트
-                        pass
+                        if dummyLinearCheck() < 0:
+                            errorExit()
+                
+                        #6-1. DC 모터 동작
+                        elif dummyDCCheck() < 0:
+                            errorExit()
+                        
 
                     elif RVM_status.force_continue == 'no' :
                         sendMesg('반환')
@@ -278,10 +286,10 @@ def dummyImgCheck():
         return random.randrange(-1,1)
 
     else:
-        result = image_precess()
+        result, acc = image_precess()
         trigger('endCamera')
         
-        if result == RVM_status.user_select:
+        if result == RVM_status.user_select and acc >= 80:
             return 1
         else:
             return -1
@@ -325,8 +333,9 @@ def dummyElseCheck():
 
 def checkLoadCell():
     RVM_status.exec_stat = EXEC_LOADCELL_TYPE
-
     sendMesg('로드셀')
+
+    #count =0
 
     if debug:
         time.sleep(2)
@@ -334,6 +343,7 @@ def checkLoadCell():
             return -1
         return retValOK
     else:
+        """
         ser.write('4'.encode())
         while(ser.readable()):
             ret = ser.read()
@@ -343,6 +353,9 @@ def checkLoadCell():
                 return Error
             else:
                 count += 1
+        """
+        time.sleep(1)
+        return 1
 
 def moveCommand(destination):
     count = 0
@@ -411,8 +424,8 @@ def moveCommand(destination):
 
 
 def image_precess():
-    start = time.time()
-    os.system('sudo fswebcam -d /dev/video1 --no-banner /home/jetsontx1/embedded-system-project/chang_gong/static/img/sendimage.jpg')
+    subprocess.call('sudo fswebcam -d /dev/video1 --no-banner /home/jetsontx1/embedded-system-project/chang_gong/static/img/sendimage.jpg', shell=True, timeout = 4)
+    time.sleep(5)
     sendCamera('/static/img/sendimage.jpg')
     img = cv2.imread("/home/jetsontx1/embedded-system-project/chang_gong/static/img/sendimage.jpg", cv2.IMREAD_COLOR)
     crop_pre = img[80:250,90:300]
@@ -429,8 +442,8 @@ def image_precess():
 
     image = Image.open('/home/jetsontx1/embedded-system-project/chang_gong/static/img/sendimage_preprocessing.jpg')
 
-    img = preprocess(image).cuda()
-    batch_t = torch.unsqueeze(img, 0)
+    img2 = preprocess(image).cuda()
+    batch_t = torch.unsqueeze(img2, 0)
     result = model_ft(batch_t)
     percentage = torch.nn.functional.softmax(result, dim=1)[0] * 100
 
@@ -439,10 +452,12 @@ def image_precess():
     else:
         waste = "can"
 
-    #print(waste + " ", max(percentage).item())
+    print(waste + " ", max(percentage).item())
     #print("time :", time.time() - start)
 
-    return waste
+    image.close()
+
+    return [waste, max(percentage).item()]
 
 
 
@@ -456,13 +471,13 @@ RVM_status = RVM_Stat()
 if not debug:
     # USB serial interface
     port = '/dev/ttyUSB0'                           
-    ser = serial.Serial(port, 9600, timeout = 2)
+    ser = serial.Serial(port, 38400, timeout = 2)
 
     # image model interface
     model_ft = models.resnet34()
     num_ftrs = model_ft.fc.in_features
     model_ft.fc = nn.Linear(num_ftrs, 2)
-    model_ft.load_state_dict(torch.load("./model/output_two_can_pet_data_v5_34layer.pth"))
+    model_ft.load_state_dict(torch.load("/home/jetsontx1/young/finalProject/model/output_two_can_pet_data_v5_34layer.pth"))
     model_ft.eval().cuda()
 
 # main Cycle init

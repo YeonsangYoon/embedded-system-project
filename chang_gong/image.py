@@ -6,10 +6,12 @@ from torchvision import models
 import torch.nn as nn
 from PIL import Image
 import os
+import subprocess
 
 def image_precess():
     start = time.time()
-    os.system('sudo fswebcam -d /dev/video1 --no-banner /home/jetsontx1/young/finalProject/youngs_test_before.jpg')
+    subprocess.call('sudo fswebcam -d /dev/video1 --no-banner /home/jetsontx1/young/finalProject/youngs_test_before.jpg', shell = True, timeout =10)
+    time.sleep(5)
     img = cv2.imread("/home/jetsontx1/young/finalProject/youngs_test_before.jpg", cv2.IMREAD_COLOR)
     crop_pre = img[80:250,90:300]
     cv2.imwrite('/home/jetsontx1/young/finalProject/youngs_test_after.jpg', crop_pre)
@@ -29,7 +31,7 @@ def image_precess():
     # model_ft.load_state_dict(torch.load("./model/output_two_can_pet_data_v5_34layer.pth"))
     # model_ft.eval().cuda()
 
-    image = Image.open('youngs_test_after.jpg')
+    image = Image.open('/home/jetsontx1/young/finalProject/youngs_test_after.jpg')
 
     img = preprocess(image).cuda()
     batch_t = torch.unsqueeze(img, 0)
@@ -48,6 +50,10 @@ if __name__=="__main__":
     model_ft = models.resnet34()
     num_ftrs = model_ft.fc.in_features
     model_ft.fc = nn.Linear(num_ftrs, 2)
-    model_ft.load_state_dict(torch.load("./model/output_two_can_pet_data_v5_34layer.pth"))
+    model_ft.load_state_dict(torch.load("/home/jetsontx1/young/finalProject/model/output_two_can_pet_data_v5_34layer.pth"))
     model_ft.eval().cuda()
-    image_precess()
+
+
+    for i in range(1000):
+        print(i)
+        image_precess()
