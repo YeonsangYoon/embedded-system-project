@@ -115,6 +115,7 @@ class RVM_Stat:
             "pet" : 0
         }
         self.error_stat = retValOK
+        self.reset_selection = 0
 
     def startRVM(self):
         self.machine_stat = RVM_STATE_ON
@@ -126,13 +127,14 @@ class RVM_Stat:
         if result == 'pet':
             sendMesg('페트병 하나 처리되었습니다')
             self.recycling_number['pet'] += 1
-            self.user_select = ''
         elif result == 'can':
             sendMesg('캔 하나 처리되었습니다')
             self.recycling_number['can'] += 1
-            self.user_select = ''
         elif result == 'return':
             sendMesg('잘못된 쓰레기를 다시 반송합니다')
+
+        if self.reset_selection == 1 :
+            self.reset_selection = 0
             self.user_select = ''
 
         if self.machine_stat == RVM_STATE_OFF:
@@ -188,7 +190,7 @@ def main_Cycle():
             else:
                 #2. 로드셀 확인
                 if checkLoadCell() < 0:
-                    errorExit()
+                    pass
 
                 #3. 이미지 판별
                 elif dummyImgCheck() < 0:
@@ -198,21 +200,24 @@ def main_Cycle():
                     
                     elif RVM_status.force_continue == 'yes' :
                         sendMesg('진행')
+                        RVM_status.force_continue = ''
                         time.sleep(2)
                         #6 - 2 - 1. 그대로 투입하도록 선택함
                         #7 - 2 - 1. 리니어 모터 동작
                         #8 - 2 - 1. DC 모터 동작
                         #9 - 2 - 1. 상태 업데이트
-                        
                         pass
+
                     elif RVM_status.force_continue == 'no' :
                         sendMesg('반환')
+                        RVM_status.force_continue = ''
                         time.sleep(2)
-                        RVM_status.user_select = ''
+                        #RVM_status.user_select = ''
                         #6 - 2 - 2. 반환 선택함
                         #7 - 2 - 2. 사용자에게 반환하도록 일정시간 준다. 
                         #8 - 2 - 2. 상태 업데이트
-                        pass
+                        RVM_status.updateStatus('')
+                        continue
 
 
                 #4-1. 판별 결과 정확
@@ -231,6 +236,7 @@ def main_Cycle():
                 RVM_status.updateStatus(RVM_status.user_select)
                 sendCount()
                 button_text()
+                time.sleep(2)
 
             elif RVM_status.error_stat == Error :
                 #debug msg
@@ -239,6 +245,7 @@ def main_Cycle():
 
                 sendMesg("Error fixed.. restart")
                 button_text()
+                time.sleep(2)
 
                 
 
@@ -250,14 +257,23 @@ def errorExit():
     error_report(RVM_status.exec_stat)
 
 def checkUserInput():
-    sendMesg('캔 패트 고르기')
-    while RVM_status.user_select == '' and RVM_status.machine_stat == 1 :
-        pass
+    if RVM_status.user_select == '' :
+        sendMesg('캔 패트 고르기')
+        trigger('showButton')
+        
+        while RVM_status.user_select == '' and RVM_status.machine_stat == 1 :
+            pass
     
-    if RVM_status.machine_stat == 0 :
-        return -1
-    
+        if RVM_status.machine_stat == 0 :
+            return -1
+        
+        else :
+            sendMesg(RVM_status.user_select + '를 선택함')
+            time.sleep(1)
+            return 1
+
     else :
+        sendMesg(RVM_status.user_select + '을 넣어주세요')
         return 1
 
 def dummyImgCheck():
@@ -276,7 +292,7 @@ def checkForceContinue():
         return -1
 
     else :
-        return RVM_status.force_continue
+        return 1
 
 def dummyLinearCheck():
     sendMesg('리니어모터')
@@ -321,13 +337,19 @@ def checkLoadCell():
     #printB('쓰레기를 처리중 입니다')
     #printU('#2 : check object weight')
 
-    sendMesg('쓰레기를 처리중 입니다')
+    #sendMesg('로드셀')
 
     if debug:
         time.sleep(2)
+        if RVM_status.user_select == '' :
+            return -1
         return retValOK
     else:
         while 1:
+
+            #if RVM_status.user_select == '' :
+            #    return -1
+
             weights = []
 
             for i in range(20):
@@ -345,8 +367,9 @@ def checkLoadCell():
                 #printB('쓰레기를 처리중 입니다')
                 return retValOK
             else:
+                pass
                 #printB('쓰레기의 무게가 초과되었습니다.')
-                sendMesg('무게초과')
+                #sendMesg('무게초과')
 
             time.sleep(0.5)
 

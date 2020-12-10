@@ -343,7 +343,7 @@ def main_Cycle():
             #1 Check IR sensor
             if checkObjectCond() < 0:
                 if RVM_status.machine_stat == RVM_STATE_OFF :
-                    resultD = 0;
+                    resultD = 0
                 else : 
                     errorExit()
 

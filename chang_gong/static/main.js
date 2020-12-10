@@ -47,6 +47,10 @@ $(document).ready(function(){
             else if(msg.data === 'endCamera'){
                 ctx.clearRect(0,0,canvas.width,canvas.height);
             }
+            else if(msg.data === 'showButton'){
+                $('#pet_button').show();
+                $('#can_button').show();
+            }
         }
 
         else if(msg.head === 'end'){
@@ -63,10 +67,13 @@ $(document).ready(function(){
 
     $('#pet_button').on('click', function(){
         socket.emit('request', {'head':'button','data': 'pet'});
+        $('#can_button').hide();
+        
     });
 
     $('#can_button').on('click', function(){
         socket.emit('request', {'head':'button','data': 'can'});
+        $('#pet_button').hide();
     });
 
     $('#start_button').on('click', function(){

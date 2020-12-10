@@ -59,7 +59,10 @@ def web_request(message):
         return
 
     if message['data'] == 'end' :
-        r_stat.terminationRVM()
+        if r_stat.user_select == '' and r_stat.reset_selection == 0:
+            r_stat.terminationRVM()
+        else :
+            r_stat.reset_selection = 1
         return
 
     if message['data'] == 'force_continue' :
