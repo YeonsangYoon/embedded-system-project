@@ -64,8 +64,11 @@ args = parser.parse_args()
 debug = args.debug
 
 if debug == False:
-    import RPi.GPIO as GPIO
-    from hx711 import HX711
+    import cv2
+    import torch
+    from torchvision import transforms, models
+    import torch.nn as nn
+    from PIL import Image
 
 
 ####################################################################################
@@ -87,16 +90,6 @@ EXEC_ROUTING_TYPE = 5
 # Error Type
 retValOK = 1
 Error = -1
-
-# Rasp GPIO Pin
-IR_Pin1 = 6         # Boad(5)
-IR_Pin2 = 13         # Boad(7)
-IR_Pin3 = 19        # Boad(11)
-IR_Pin4 = 26        # Boad(13)
-
-LC_DT_Pin = 23      # Boad(16)
-LC_SCK_Pin = 24     # Boad(18)
-
 
 ####################################################################################
 #                                Class & Functions                                 #
@@ -277,10 +270,21 @@ def checkUserInput():
         return 1
 
 def dummyImgCheck():
-    sendCamera('/static/img/sample.jpg')
-    time.sleep(5)
-    trigger('endCamera')
-    return random.randrange(-1,1)
+    if debug:
+        sendCamera('/static/img/sample.jpg')
+        time.sleep(3)
+        trigger('endCamera')
+
+        return random.randrange(-1,1)
+
+    else:
+        result = image_precess()
+        trigger('endCamera')
+        
+        if result == RVM_status.user_select:
+            return 1
+        else:
+            return -1
 
 def checkForceContinue():
     sendMesg('계속 진행?')
@@ -321,10 +325,8 @@ def dummyElseCheck():
 
 def checkLoadCell():
     RVM_status.exec_stat = EXEC_LOADCELL_TYPE
-    #printB('쓰레기를 처리중 입니다')
-    #printU('#2 : check object weight')
 
-    #sendMesg('로드셀')
+    sendMesg('로드셀')
 
     if debug:
         time.sleep(2)
@@ -347,7 +349,6 @@ def moveCommand(destination):
 
     if destination == 'linear':
         RVM_status.exec_stat = EXEC_RAIL_TYPE
-        #printU("#3 : moving to discriminating zone")
         sendMesg('moving to discriminating zone')
         
         if debug:
@@ -408,6 +409,43 @@ def moveCommand(destination):
     else:
         return Error
 
+
+def image_precess():
+    start = time.time()
+    os.system('sudo fswebcam -d /dev/video1 --no-banner /home/jetsontx1/embedded-system-project/chang_gong/static/img/sendimage.jpg')
+    sendCamera('/static/img/sendimage.jpg')
+    img = cv2.imread("/home/jetsontx1/embedded-system-project/chang_gong/static/img/sendimage.jpg", cv2.IMREAD_COLOR)
+    crop_pre = img[80:250,90:300]
+    cv2.imwrite('/home/jetsontx1/embedded-system-project/chang_gong/static/img/sendimage_preprocessing.jpg', crop_pre)
+
+    preprocess = transforms.Compose([
+        transforms.Resize((224,224)),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],
+        std=[0.229, 0.224, 0.225]
+    )])
+
+    image = Image.open('/home/jetsontx1/embedded-system-project/chang_gong/static/img/sendimage_preprocessing.jpg')
+
+    img = preprocess(image).cuda()
+    batch_t = torch.unsqueeze(img, 0)
+    result = model_ft(batch_t)
+    percentage = torch.nn.functional.softmax(result, dim=1)[0] * 100
+
+    if(percentage == max(percentage)).nonzero().item() == 1:
+        waste = "pet"
+    else:
+        waste = "can"
+
+    #print(waste + " ", max(percentage).item())
+    #print("time :", time.time() - start)
+
+    return waste
+
+
+
 ####################################################################################
 #                                   main sequence                                  #
 ####################################################################################
@@ -419,6 +457,13 @@ if not debug:
     # USB serial interface
     port = '/dev/ttyUSB0'                           
     ser = serial.Serial(port, 9600, timeout = 2)
+
+    # image model interface
+    model_ft = models.resnet34()
+    num_ftrs = model_ft.fc.in_features
+    model_ft.fc = nn.Linear(num_ftrs, 2)
+    model_ft.load_state_dict(torch.load("./model/output_two_can_pet_data_v5_34layer.pth"))
+    model_ft.eval().cuda()
 
 # main Cycle init
 t = threading.Thread(target=socketStart)
