@@ -54,6 +54,8 @@ import time
 import argparse 
 #import serial
 import random
+import cv2
+import base64
 
 from server import *
 
@@ -120,10 +122,10 @@ class RVM_Stat:
 
     def updateStatus(self, result):
         if result == 'pet':
-            sendMesg('페트병 하나 처리되었습니다')
+            #sendMesg('페트병 하나 처리되었습니다')
             self.recycling_number['pet'] += 1
         elif result == 'can':
-            sendMesg('캔 하나 처리되었습니다')
+            #sendMesg('캔 하나 처리되었습니다')
             self.recycling_number['can'] += 1
         elif result == 'return':
             sendMesg('잘못된 쓰레기를 다시 반송합니다')
@@ -194,7 +196,12 @@ def main_Cycle():
                         errorExit()
                     
                     elif RVM_status.force_continue == 'yes' :
-                        sendMesg('진행')
+                        if RVM_status.user_select == 'can' :
+                            sendMesg('\n쓰레기를 캔으로 분류합니다.')
+
+                        elif RVM_status.user_select == 'pet' :
+                            sendMesg('쓰레기를 페트병으로\n분류합니다.')
+                        
                         RVM_status.force_continue = ''
                         time.sleep(2)
                         #6 - 2 - 1. 그대로 투입하도록 선택함
@@ -210,9 +217,9 @@ def main_Cycle():
                         
 
                     elif RVM_status.force_continue == 'no' :
-                        sendMesg('반환')
+                        sendMesg('쓰레기를 반환합니다.\n쓰레기를 다시 가져가주세요.')
                         RVM_status.force_continue = ''
-                        time.sleep(2)
+                        time.sleep(5)
                         #RVM_status.user_select = ''
                         #6 - 2 - 2. 반환 선택함
                         #7 - 2 - 2. 사용자에게 반환하도록 일정시간 준다. 
@@ -259,7 +266,7 @@ def errorExit():
 
 def checkUserInput():
     if RVM_status.user_select == '' :
-        sendMesg('캔 패트 고르기')
+        sendMesg('캔을 투입할지\n페트병을 투입할지\n선택해주세요.')
         trigger('showButton')
         
         while RVM_status.user_select == '' and RVM_status.machine_stat == 1 :
@@ -269,12 +276,21 @@ def checkUserInput():
             return -1
         
         else :
-            sendMesg(RVM_status.user_select + '를 선택함')
+            if RVM_status.user_select == 'can' :
+                sendMesg('\n캔을 선택했습니다.')
+
+            elif RVM_status.user_select == 'pet' :
+                sendMesg('\n페트병을 선택했습니다.')
+
             time.sleep(1)
             return 1
 
     else :
-        sendMesg(RVM_status.user_select + '을 넣어주세요')
+        if RVM_status.user_select == 'can' :
+                sendMesg('\n캔을 넣어주세요.')
+
+        elif RVM_status.user_select == 'pet' :
+            sendMesg('\n페트병을 넣어주세요.')
         return 1
 
 def dummyImgCheck():
@@ -295,7 +311,11 @@ def dummyImgCheck():
             return -1
 
 def checkForceContinue():
-    sendMesg('계속 진행?')
+    if RVM_status.user_select == 'can' :
+        sendMesg('투입한 쓰레기가 캔으로 인식되지 않습니다.\n계속 진행하시겠습니까?')
+
+    elif RVM_status.user_select == 'pet' :
+        sendMesg('투입한 쓰레기가 페트병으로 인식되지 않습니다.\n계속 진행하시겠습니까?')
     trigger('forceContinue')
     while RVM_status.force_continue == '' and RVM_status.machine_stat == 1 :
         pass
@@ -307,16 +327,18 @@ def checkForceContinue():
         return 1
 
 def dummyLinearCheck():
-    sendMesg('리니어모터')
+    #sendMesg('리니어모터')
     if debug:
+        sendMesg('\n분류 지점으로 이동중입니다.')
         time.sleep(1)
     else:
         moveCommand('linear')
     return 1
 
 def dummyDCCheck():
-    sendMesg('DC모터')
+    #sendMesg('DC모터')
     if debug:
+        sendMesg(RVM_status.user_select + '를 수거합니다.')
         time.sleep(1)
     elif RVM_status.user_select == 'pet':
         moveCommand('pet')
@@ -333,7 +355,7 @@ def dummyElseCheck():
 
 def checkLoadCell():
     RVM_status.exec_stat = EXEC_LOADCELL_TYPE
-    sendMesg('로드셀')
+    sendMesg('\n쓰레기의 무게를 측정중입니다.')
 
     #count =0
 
@@ -362,7 +384,7 @@ def moveCommand(destination):
 
     if destination == 'linear':
         RVM_status.exec_stat = EXEC_RAIL_TYPE
-        sendMesg('moving to discriminating zone')
+        sendMesg('\n분류 지점으로 이동중입니다.')
         
         if debug:
             time.sleep(1)
@@ -382,7 +404,7 @@ def moveCommand(destination):
 
     elif destination == 'pet':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        sendMesg('#5 : moving to pet zone')
+        sendMesg('\n페트병을 수거합니다.')
 
         if debug:
             time.sleep(1)
@@ -403,7 +425,7 @@ def moveCommand(destination):
 
     elif destination == 'can':
         RVM_status.exec_stat = EXEC_ROUTING_TYPE
-        sendMesg('#5 : moving to can zone')
+        sendMesg('\n캔을 수거합니다.')
         if debug:
             time.sleep(1)
             return retValOK

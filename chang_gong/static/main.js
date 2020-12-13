@@ -5,23 +5,26 @@ $(document).ready(function(){
     var can_div = $('#current_can');
     var pet_div = $('#current_pet');
     var ctx;
+    var canpetLock = true;
 
 
     socket.on('response', function(msg){
         
         if(msg.head === 'msg_ready'){
-            msg_div.text(msg.data);
+            msg_div.html(msg.data.replaceAll('\n','<br>'));
         }
 
         else if(msg.head === 'count_ready'){
-            can_div.text(msg.data.can);
-            pet_div.text(msg.data.pet);
+            can_div.html(msg.data.can);
+            pet_div.html(msg.data.pet);
         }
 
         else if(msg.head === 'img_ready'){
+            msg_div.html('');
             ctx = canvas.getContext('2d');
             let img = new Image();
-            img.src = msg.data
+            console.log(msg.data)
+            img.src = 'data:image/jpg;base64,'+msg.data
             img.onload = function(){
                 ctx.clearRect(0,0,canvas.width,canvas.height);
                 ctx.drawImage(img,0,0,canvas.width,canvas.height);
@@ -48,32 +51,39 @@ $(document).ready(function(){
                 ctx.clearRect(0,0,canvas.width,canvas.height);
             }
             else if(msg.data === 'showButton'){
+                $('#end_button').removeClass('pressed');
+                canpetLock = false;
                 $('#pet_button').show();
                 $('#can_button').show();
             }
         }
 
         else if(msg.head === 'end'){
-            msg_div.text(`캔 ${msg.can}개, 페트 ${msg.pet}개`);
-            can_div.text('0');
-            pet_div.text('0');
+            msg_div.html(`캔 ${msg.can}개<br>페트 ${msg.pet}개<br>총 ${msg.can+msg.pet}개 수거했습니다.`);
+            can_div.html('0');
+            pet_div.html('0');
         }
 
         else if(msg.head === 'error'){
-            msg_div.text(msg.data);
+            msg_div.html(msg.data);
         }
     });
 
 
     $('#pet_button').on('click', function(){
-        socket.emit('request', {'head':'button','data': 'pet'});
-        $('#can_button').hide();
-        
+        if(!canpetLock){
+            socket.emit('request', {'head':'button','data': 'pet'});
+            $('#can_button').hide();
+            canpetLock = true;
+        }
     });
 
     $('#can_button').on('click', function(){
-        socket.emit('request', {'head':'button','data': 'can'});
-        $('#pet_button').hide();
+        if(!canpetLock){
+            socket.emit('request', {'head':'button','data': 'can'});
+            $('#pet_button').hide();
+            canpetLock = true;
+        }
     });
 
     $('#start_button').on('click', function(){
@@ -84,6 +94,7 @@ $(document).ready(function(){
 
     $('#end_button').on('click', function(){
         socket.emit('request', {'head':'button','data': 'end'});
+        $('#end_button').addClass('pressed');
     });
 
     $('#force_yes_button').on('click', function(){
@@ -108,3 +119,7 @@ $(document).ready(function(){
         return false;
     });
 });
+
+
+
+

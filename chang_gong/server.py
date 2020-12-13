@@ -96,12 +96,17 @@ def endReport() :
     obj = {'head' : 'end' ,'can': r_stat.recycling_number['can'],'pet': r_stat.recycling_number['pet'] }
     socketio.emit("response", obj,namespace='/mynamespace',room= clients[-1])
 
-
+'''
 def sendCamera(url) :
     obj = {'head':'img_ready', 'data':url}
     socketio.emit("response", obj,namespace='/mynamespace',room= clients[-1])
+'''
 
-
+def sendCamera(url) :
+    with open('.'+url, 'rb') as img:
+        b64 = base64.b64encode(img.read()).decode('utf-8')
+    obj = {'head':'img_ready', 'data':b64}
+    socketio.emit("response", obj,namespace='/mynamespace',room= clients[-1])
 
 def error_report(s) :
     obj = {'head':'error', 'data':s}

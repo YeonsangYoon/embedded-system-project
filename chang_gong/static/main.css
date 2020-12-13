@@ -9,6 +9,7 @@ body {
     max-width: 1334px;
     min-height: 728px;
     font-family: 'BMJUA';
+    color : #2b9fb8;
 }
 
 .bg2 {
@@ -23,6 +24,19 @@ body {
     position: absolute;
     left:144px;
     top: 22px;
+    font-size: 55px;
+    text-align: center;
+    line-height: 100px;
+}
+
+#message_content{
+    width: 620px;
+    position: absolute;
+    left:100px;
+    top: 22px;
+    font-size: 55px;
+    text-align: center;
+    line-height: 80px;
 }
 
 #message_frame{
@@ -73,8 +87,8 @@ body {
     height:84px;
     background : url('img/start.png') no-repeat;
     position: absolute;
-    top: 400px;
-    left: 0px;
+    top: 600px;
+    left: 980px;
 }
 
 #end_button {
@@ -82,8 +96,13 @@ body {
     height:84px;
     background : url('img/end.png') no-repeat;
     position: absolute;
-    top: 400px;
-    left: 300px;
+    top: 600px;
+    left: 980px;
+}
+
+
+#end_button.pressed{
+    background : url('img/end_press.png') no-repeat;
 }
 
 #can_button {
@@ -91,8 +110,8 @@ body {
     height:84px;
     background : url('img/can.png') no-repeat;
     position: absolute;
-    top: 400px;
-    left: 600px;
+    top: 600px;
+    left: 200px;
 }
 
 #pet_button {
@@ -100,8 +119,8 @@ body {
     height:84px;
     background : url('img/pet.png') no-repeat;
     position: absolute;
-    top: 400px;
-    left: 900px;
+    top: 600px;
+    left: 600px;
 }
 
 #force_yes_button {
@@ -110,7 +129,7 @@ body {
     background : url('img/yes.png') no-repeat;
     position: absolute;
     top: 300px;
-    left: 0px;
+    left: 100px;
 }
 
 #force_no_button {
@@ -119,7 +138,7 @@ body {
     background : url('img/no.png') no-repeat;
     position: absolute;
     top: 300px;
-    left: 300px;
+    right: 100px;
 }
 
 .button {
